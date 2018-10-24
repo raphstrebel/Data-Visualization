@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -6,19 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Colorful Traces</title>
   <link rel="stylesheet" href="style.css">
- 
+  <link rel = "stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+      <script src = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
 </head>
 <body>
-<svg width="100%" height="100%">
+	 <div id="map"></div>
 
-</svg>
-
-<!--
-D3.js fails to load in module mode
-<script type="module" src="lib/d3.min.js"></script>
-<script type="module" src="BarChart.js"></script>
- -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
-<script src="colorfulTracesFunctions.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.7.0/d3.min.js"></script>
+	<script src="colorfulTracesFunctions.js"></script>
 </body>
 </html>
