@@ -11,3 +11,36 @@ L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	maxZoom: 17,
 	minZoom: 9
 }).addTo(map);
+
+class MapPlot {
+
+	constructor(svg_element_id) {
+		this.svg = d3.select('#' + svg_element_id);
+
+		const all_data = d3.csv("data/cleaned.csv").then((data) => {
+			let d = {};
+			data.forEach((row) => {
+				d[row.code] =  parseFloat(row.density);
+			});
+			return d;
+		});
+
+		Promise.all([population_promise]).then((results) => {
+			console.log(results[0]);
+		});
+	}
+}
+
+function whenDocumentLoaded(action) {
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", action);
+	} else {
+		// `DOMContentLoaded` already fired
+		action();
+	}
+}
+
+whenDocumentLoaded(() => {
+	plot_object = new MapPlot('map-plot');
+	// plot object is global, you can inspect it in the dev-console
+});
