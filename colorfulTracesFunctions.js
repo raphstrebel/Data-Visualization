@@ -25,8 +25,9 @@ class MapPlot {
 			return d;
 		});
 
-		Promise.all([population_promise]).then((results) => {
-			console.log(results[0]);
+		Promise.all([all_data]).then((results) => {
+			let a = results[0];
+			console.log(a);
 		});
 	}
 }
@@ -43,4 +44,5 @@ function whenDocumentLoaded(action) {
 whenDocumentLoaded(() => {
 	plot_object = new MapPlot('map-plot');
 	// plot object is global, you can inspect it in the dev-console
+
 });
