@@ -20,14 +20,28 @@ class MapPlot {
 		const all_data = d3.csv("data/cleaned.csv").then((data) => {
 			let d = {};
 			data.forEach((row) => {
-				d[row.code] =  parseFloat(row.density);
+				d[row.i] =  parseFloat(row.t);
 			});
 			return d;
 		});
 
-		Promise.all([all_data]).then((results) => {
-			let a = results[0];
-			console.log(a);
+		const pickup_nodes = d3.csv("data/cleaned.csv").then((data) => {
+			let pickupNodes = [];
+			var newPickupNode;
+
+			data.forEach((row) => {
+				newPickupNode = data[row.pnode];
+				if(!pickupNodes.includes(newPickupNode)) {
+					console.log("Not contains");
+					pickupNodes.push(newPickupNode);
+				}
+			});
+			return pickupNodes;
+		});
+
+		Promise.all([all_data, pickup_nodes]).then((results) => {
+			let all_unique_pickups = results[1];
+			console.log(all_unique_pickups[0]);
 		});
 	}
 }
