@@ -39,11 +39,41 @@ class MapPlot {
 			return pickupNodes;
 		});
 
+		// Load the dictionary of OSM node ID to long, lat tuple
+		var idToLngLat;
+
+		$.getJSON("data/OSMToLatLngDictionary.json", function(json) {
+		    //console.log(json); // to get lng lat of point with id 35295132 : json[35295132]
+		    idToLngLat = json;
+		});
+
+		// Make an Icon
+		var myIcon = L.icon({
+		    iconUrl: 'redIcon.png',
+		    iconSize: [10, 10],
+		    //iconAnchor: [22, 94],
+		    //popupAnchor: [-3, -76],
+		    //shadowUrl: 'my-icon-shadow.png',
+		    //shadowSize: [68, 95],
+		    //shadowAnchor: [22, 94]
+		});
+
+
 		Promise.all([pickup_nodes]).then((results) => {
 			let all_unique_pickups = results[0];
-			console.log(all_unique_pickups.length);
-
+			//console.log(all_unique_pickups.length);
+			
 			// Show all pickup nodes on the map
+			// test marker
+			all_unique_pickups.forEach(function(point) {
+				console.log(point);
+				//if(idToLngLat[point] != nil) {
+				if(idToLngLat.hasOwnProperty(point)){
+					L.marker([idToLngLat[point][0], idToLngLat[point][1]], {icon: myIcon}).addTo(map);
+				}
+			});
+			//L.marker([idToLngLat[35295132][0], idToLngLat[35295132][1]], {icon: myIcon}).addTo(map);
+			//L.marker([idToLngLat[35295132][0], idToLngLat[35295132][1]]).addTo(map);
 		});
 	}
 }
