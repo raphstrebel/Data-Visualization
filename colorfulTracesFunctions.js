@@ -25,23 +25,25 @@ class MapPlot {
 			return d;
 		});
 
+		// Load the pickup nodes (loaded once even if they appear multiple times)
 		const pickup_nodes = d3.csv("data/cleaned.csv").then((data) => {
 			let pickupNodes = [];
 			var newPickupNode;
 
 			data.forEach((row) => {
-				newPickupNode = data[row.pnode];
+				newPickupNode = parseFloat(row.pnode);
 				if(!pickupNodes.includes(newPickupNode)) {
-					console.log("Not contains");
 					pickupNodes.push(newPickupNode);
 				}
 			});
 			return pickupNodes;
 		});
 
-		Promise.all([all_data, pickup_nodes]).then((results) => {
-			let all_unique_pickups = results[1];
-			console.log(all_unique_pickups[0]);
+		Promise.all([pickup_nodes]).then((results) => {
+			let all_unique_pickups = results[0];
+			console.log(all_unique_pickups.length);
+
+			// Show all pickup nodes on the map
 		});
 	}
 }
