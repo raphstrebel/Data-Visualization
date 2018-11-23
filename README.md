@@ -21,7 +21,7 @@ The principal elements of our viz are the following:
 
 ## Access the viz online and the process book
 
-Please, go to http://colofultraces.ch to access the online visualization.
+Please, go to http://colorfultraces.ch/ to access the online visualization.
 
 The process Book is available :
 https://docs.google.com/document/d/1DDdkwmWDgT0PgklJ2G6A1xgxd5zf4hakYhNSSiM9VW4/edit
@@ -30,4 +30,4 @@ https://docs.google.com/document/d/1DDdkwmWDgT0PgklJ2G6A1xgxd5zf4hakYhNSSiM9VW4/
 ## Discussion about the present visualization
 
 The present viz is of course not finished yet.
-We have a simple map where the `pickup` locations are shown in red and `dropoff` in blue. It will be usefull for liking the node in the simple network (without the map) to the node in the actual map when clicking on it for exemple.
+We have a simple map where the `pickup` locations are shown in red and `dropoff` in blue. It will be usefull for linking the node in the simple network (without the map) to the node in the actual map when clicking on it for exemple.

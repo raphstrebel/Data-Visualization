@@ -6,7 +6,6 @@ body{
 */
 
 h1{
-	align-content: center;
 	margin-bottom: 7px;
 }
 
@@ -17,6 +16,5 @@ h4{
 }
 
 #map{
-	height: 100%
-	dipla
+	height: 100%;
 }
