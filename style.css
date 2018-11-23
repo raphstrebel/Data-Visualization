@@ -1,3 +1,22 @@
-#map{ 
-	height: 100% 
+/*
+body{
+	background-color:white;
+	color : white;
+}
+*/
+
+h1{
+	align-content: center;
+	margin-bottom: 7px;
+}
+
+
+h4{
+	margin-top: 5px;
+	font-style: italic;
+}
+
+#map{
+	height: 100%
+	dipla
 }
