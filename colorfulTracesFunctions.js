@@ -9,7 +9,7 @@ var map = L.map('map').setView([46.5201349,6.6308389], 12); // center on Lausann
 L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
 	maxZoom: 17,
-	minZoom: 9
+	minZoom: 12
 }).addTo(map);
 
 class MapPlot {
@@ -26,29 +26,44 @@ class MapPlot {
 		});
 
 		// Load the pickup nodes (loaded once even if they appear multiple times)
-		const pickup_nodes = d3.csv("data/cleaned.csv").then((data) => {
+		const pickup_and_dropoff_nodes_promise = d3.csv("data/cleaned.csv").then((data) => {
 			let pickupNodes = [];
 			var newPickupNode;
+
+			let dropoffNodes = [];
+			var newDropoffNode;
 
 			data.forEach((row) => {
 				newPickupNode = parseFloat(row.pnode);
 				if(!pickupNodes.includes(newPickupNode)) {
 					pickupNodes.push(newPickupNode);
 				}
+
+				newDropoffNode = parseFloat(row.dnode);
+				if(!dropoffNodes.includes(newDropoffNode)) {
+					dropoffNodes.push(newDropoffNode);
+				}
 			});
-			return pickupNodes;
+
+			return {
+		        Pickup: pickupNodes,
+		        Dropoff: dropoffNodes
+		    };;
 		});
 
-		// Load the dictionary of OSM node ID to long, lat tuple
-		var idToLngLat;
-
-		$.getJSON("data/OSMToLatLngDictionary.json", function(json) {
-		    //console.log(json); // to get lng lat of point with id 35295132 : json[35295132]
-		    idToLngLat = json;
+		// Load the dictionary of OSM node ID to (long, lat) tuple
+		const node_id_to_coordinate_promise = $.getJSON("data/OSMToLatLngDictionary.json", function(json) {}).then((data) => {
+			return data;
 		});
 
-		// Make an Icon
-		var myIcon = L.icon({
+		// Load the dictionary of OSM node ID to number of occurences of this node
+		const node_id_to_occurences_promise = $.getJSON("data/nodesToOccurences.json", function(json){}).then((data) => {
+			return data;
+		});
+
+
+		// Make the pickup Icon
+		var pickupIcon = L.icon({
 		    iconUrl: 'redIcon.png',
 		    iconSize: [10, 10],
 		    //iconAnchor: [22, 94],
@@ -56,27 +71,59 @@ class MapPlot {
 		    //shadowUrl: 'my-icon-shadow.png',
 		    //shadowSize: [68, 95],
 		    //shadowAnchor: [22, 94]
+		    //riseOnHover: true,
+		});
+
+		// Make the pickup Icon
+		var dropoffIcon = L.icon({
+		    iconUrl: 'blueIcon.png',
+		    iconSize: [10, 10],
 		});
 
 
-		Promise.all([pickup_nodes]).then((results) => {
-			let all_unique_pickups = results[0];
-			//console.log(all_unique_pickups.length);
-			
-			// Show all pickup nodes on the map
-			// test marker
-			all_unique_pickups.forEach(function(point) {
-				console.log(point);
-				//if(idToLngLat[point] != nil) {
-				if(idToLngLat.hasOwnProperty(point)){
-					L.marker([idToLngLat[point][0], idToLngLat[point][1]], {icon: myIcon}).addTo(map);
+		Promise.all([pickup_and_dropoff_nodes_promise, node_id_to_coordinate_promise, node_id_to_occurences_promise]).then((results) => {
+			let pickup_nodes = results[0].Pickup;
+			let dropoff_nodes = results[0].Dropoff;
+			let node_id_to_coordinate = results[1]
+			let node_id_to_occurences = results[2];
+			const all_nodes = Object.keys(node_id_to_occurences);
+
+			// Show all dropoff nodes on the map
+			dropoff_nodes.forEach(function(point) {
+				if(node_id_to_coordinate.hasOwnProperty(point)){
+					L.marker([node_id_to_coordinate[point][0], node_id_to_coordinate[point][1]], {icon: dropoffIcon}).addTo(map);
 				}
 			});
-			//L.marker([idToLngLat[35295132][0], idToLngLat[35295132][1]], {icon: myIcon}).addTo(map);
-			//L.marker([idToLngLat[35295132][0], idToLngLat[35295132][1]]).addTo(map);
+
+			// Display pickup nodes after 2 seconds
+			setTimeout(showPickupNodes, 2000);
+
+			// Show all pickup nodes on the map
+			function showPickupNodes() {
+				pickup_nodes.forEach(function(point) {
+					if(node_id_to_coordinate.hasOwnProperty(point)){
+						L.marker([node_id_to_coordinate[point][0], node_id_to_coordinate[point][1]], {icon: pickupIcon}).addTo(map).setZIndexOffset(1000);;
+					}
+				}); 
+			}
+
+
+			/* Too slow to load all nodes
+
+			all_nodes.forEach(function(point) {
+				if(idToLngLat.hasOwnProperty(point)) {
+					L.marker([idToLngLat[point][0], idToLngLat[point][1]]).addTo(map);
+				}
+			});*/
 		});
 	}
 }
+
+function test() {
+	console.log("hey man");
+}
+
+
 
 function whenDocumentLoaded(action) {
 	if (document.readyState === "loading") {
@@ -89,6 +136,7 @@ function whenDocumentLoaded(action) {
 
 whenDocumentLoaded(() => {
 	plot_object = new MapPlot('map-plot');
+	//map.dragging.disable();
 	// plot object is global, you can inspect it in the dev-console
 
 });
