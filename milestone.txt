@@ -1,0 +1,24 @@
+What we did to gain insights on the data is use python (the Jupyter Notebook is on github), and more precisely the pandas library, to analyze the data.
+The data contains 2000 entries, which is much less than what we expected. We will have to adapt our initial goals to this restriction since it will be more difficult to come up with strong statistical results with little data.
+First we searched how many total different nodes we have in the dataset (the result is 12'600). 
+Then we extracted the geographical boundaries by taking the four geographic points (minlat, minlng), (minlat, maxlng), (maxlat, minlng) and (maxlat, maxlng). 
+Then we looked at some particular attributes of the dataset, to get an idea of what we could do.
+If we look at the time attribute for example, we see that it is of the form hh:mm:00 and that it is rounded to the nearest 15 seconds. Furthermore, as the Smood deliveries are done by foot, by bicycle and by car and since we do not have this information in the dataset, the time attribute is not very precise. It might, however, be useful to give an idea of the path duration. 
+In the dataset, we are given the path as OSM node id's and also the latitude and longitude of the dropoff and pickup locations, however we dropped those entries as we have built a mapping from OSM node ID to a longitude latitude tuple.
+Those are the main preprocessing steps we have done.
+
+
+
+A picture of the visualization ideas is attached below.
+
+At the beginning we had a few ideas for a visualization :
+The first option was to have a "flow network", which is described in the picture. However we did not get into more details as there are too many distinct dropoff points (more than 500) and to many nodes in general (12'600) and the paths may well cross each other multiple times, which renders the visualization very hard to understand.
+After analyzing the dataset and deriving statistics on it we had a few more ideas, and our discussions broke down to whether or not we should use a map.
+On the one hand a map is useful, especially with this little amount of data. Furthermore the data consists of geographical points, so a map comes as the most natural answer for a visualization of the data.
+On the other hand, it would be interesting to see what we can show on the data without the use of a map. 
+After discussion, we have decided that we want to give a user both options : keep the map hidden but have the option to see a node on a map (by clicking on it for example). 
+By default, the idea is to have a network of nodes (displayed by their geographical localizations but not on a map), and the option to see them connected through edges when they are connected in the dataset. We would also give the option to show only pickup or dropoff nodes.
+By just displaying the nodes as described previously we lose the number of times a node is used, which is crucial in our vision of the project. To still be able to keep this information, we want to color the nodes according to number of times they are present in the dataset. That way we have both the network of nodes and a colored and instinctive visualization of which areas are the most used and which are not.
+So our final view is to focus on the “Colored Graph” visualization but keeping some ideas of the “Map” and the “Network Without Map” options. For example when clicking on a node we could show it’s statistics on the side and show it’s localization on a map. We could also “brush” an area of the network and show the selected region statistics.
+We have chosen the “Colored Graph” idea because we think it reflects much of what the course teaches us, both on graphs, color maps and maps.
+You can also see the the steps we followed from the design worksheets uploaded below.
