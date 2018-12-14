@@ -1,16 +1,9 @@
-// Tutorials followed : 
-// https://maptimeboston.github.io/leaflet-intro/ 
+// Tutorials followed :
+// https://maptimeboston.github.io/leaflet-intro/
 // https://www.tutorialspoint.com/leafletjs/leafletjs_getting_started.html
 
-// initialize the map
-var map = L.map('map').setView([46.5201349,6.6308389], 12); // center on Lausanne region
 
-// load a tile layer
-L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
-	maxZoom: 17,
-	minZoom: 12
-}).addTo(map);
+
 
 class MapPlot {
 
@@ -64,7 +57,7 @@ class MapPlot {
 
 		// Make the pickup Icon
 		var pickupIcon = L.icon({
-		    iconUrl: 'redIcon.png',
+		    iconUrl: 'images/redIcon.png',
 		    iconSize: [10, 10],
 		    //iconAnchor: [22, 94],
 		    //popupAnchor: [-3, -76],
@@ -76,7 +69,7 @@ class MapPlot {
 
 		// Make the pickup Icon
 		var dropoffIcon = L.icon({
-		    iconUrl: 'blueIcon.png',
+		    iconUrl: 'images/blueIcon.png',
 		    iconSize: [10, 10],
 		});
 
@@ -104,7 +97,7 @@ class MapPlot {
 					if(node_id_to_coordinate.hasOwnProperty(point)){
 						L.marker([node_id_to_coordinate[point][0], node_id_to_coordinate[point][1]], {icon: pickupIcon}).addTo(map).setZIndexOffset(1000);;
 					}
-				}); 
+				});
 			}
 
 
@@ -134,8 +127,110 @@ function whenDocumentLoaded(action) {
 	}
 }
 
+
 whenDocumentLoaded(() => {
+
+	/* UNCOMMENT THIS TO SEE THE MAP
+	// initialize the map
+	var map = L.map('map').setView([46.5201349,6.6308389], 12); // center on Lausanne region
+
+	// load a tile layer
+	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
+		maxZoom: 17,
+		minZoom: 12
+	}).addTo(map);
+
+
 	plot_object = new MapPlot('map-plot');
+
+	*/
+
+	// global variable
+	let width = 1000;
+	let height = 700;
+
+	let margin = 5;
+	let radius = 5;
+
+
+
+	// projection
+	let projection = d3.geoMercator()
+
+
+	let canvas = d3.select("svg")
+		.attr("width", width + margin)
+		.attr("height", height + margin);
+
+	d3.csv("data/dataviz.csv").then( (data) => {
+		// Creating the scale
+
+		// find the domain
+		let minLng = d3.min(data, (d) => d3.min([d.plng,d.dlng]));
+		let maxLng = d3.max(data, (d) => d3.max([d.plng,d.dlng]));
+
+		let minLat = d3.min(data, (d) => d3.min([d.plat,d.dlat]));
+		let maxLat = d3.max(data, (d) => d3.max([d.plat,d.dlat]));
+
+		// Define de mode of the scale
+		let scaleX = d3.scaleLinear()
+			.domain([minLng, maxLng])
+			.range([margin, width]);
+
+		let scaleY = d3.scaleLinear()
+			.domain([minLat, maxLat])
+			.range([margin, height]);
+
+			canvas.selectAll("g")
+				.data(data)
+					.enter()
+					.append("g")
+					//Pickup in red
+						.append("circle")
+						.attr("r" , radius)
+						.attr("transform", function(d) {
+							return "translate("+scaleX(d.dlng)+","+ scaleY(d.dlat)+")";
+						})
+						.attr("fill", "blue");
+
+		canvas.selectAll("g")
+			.data(data)
+				.append("g")
+				//Pickup in red
+					.append("circle")
+					.attr("r" , radius)
+					.attr("transform", function(d) {
+						return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
+					})
+					.attr("fill", "red");
+
+
+
+
+
+		/*
+		group.updade()
+			.append("circle")
+			.attr("r" , radius)
+			.attr("transform", function(d) {
+				return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
+			})
+			.attr("fill", "red");
+*/
+
+
+					//.fill("red")
+
+
+
+	//console.log(max)
+
+
+	});
+
+
+
 	//map.dragging.disable();
 	// plot object is global, you can inspect it in the dev-console
 
