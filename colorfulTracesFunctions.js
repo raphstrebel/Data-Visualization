@@ -154,12 +154,15 @@ whenDocumentLoaded(() => {
 	let radius = 5;
 
 
+	// scale
+	let sacleMode = d3.scaleLinear()
+
 
 	// projection
 	let projection = d3.geoMercator()
 
 
-	let canvas = d3.select("svg")
+	let canvas = d3.select("#network")
 		.attr("width", width + margin)
 		.attr("height", height + margin);
 
@@ -173,20 +176,20 @@ whenDocumentLoaded(() => {
 		let minLat = d3.min(data, (d) => d3.min([d.plat,d.dlat]));
 		let maxLat = d3.max(data, (d) => d3.max([d.plat,d.dlat]));
 
-		// Define de mode of the scale
+		// Define the scale
 		let scaleX = d3.scaleLinear()
 			.domain([minLng, maxLng])
 			.range([margin, width]);
 
 		let scaleY = d3.scaleLinear()
 			.domain([minLat, maxLat])
-			.range([margin, height]);
+			.range([height, margin]);
 
 			canvas.selectAll("g")
 				.data(data)
 					.enter()
 					.append("g")
-					//Pickup in red
+					//Dropoff in blue
 						.append("circle")
 						.attr("r" , radius)
 						.attr("transform", function(d) {
@@ -206,7 +209,35 @@ whenDocumentLoaded(() => {
 					.attr("fill", "red");
 
 
+	  // legend
 
+		let legend_spacing = 4;
+
+		canvas.append("circle")
+				.attr("id", "legend_pickup")
+				.attr("cx", margin)
+				.attr("cy", margin)
+				.attr("r", radius)
+				.attr("fill", "red");
+
+		canvas.append("text")
+			.attr("x", margin + radius + 2)
+			.attr("y", margin + radius)
+			.text("pickup");
+
+			// legend
+		canvas.append("circle")
+			.attr("id", "legend_dropoff")
+			.attr("cx", margin)
+			.attr("cy", margin + 2* radius + legend_spacing)
+			.attr("r", radius)
+			.attr("fill", "blue");
+
+
+		canvas.append("text")
+			.attr("x", margin + radius + legend_spacing)
+			.attr("y", margin + 3* radius + legend_spacing )
+			.text("dropoff");
 
 
 		/*
