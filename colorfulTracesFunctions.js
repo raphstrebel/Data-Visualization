@@ -211,7 +211,7 @@ whenDocumentLoaded(() => {
 
 	  // legend
 
-		let legend_spacing = 4;
+		let legend_spacing = 7;
 
 		canvas.append("circle")
 				.attr("id", "legend_pickup")
@@ -221,7 +221,7 @@ whenDocumentLoaded(() => {
 				.attr("fill", "red");
 
 		canvas.append("text")
-			.attr("x", margin + radius + 2)
+			.attr("x", margin + radius + 3)
 			.attr("y", margin + radius)
 			.text("pickup");
 
@@ -235,7 +235,7 @@ whenDocumentLoaded(() => {
 
 
 		canvas.append("text")
-			.attr("x", margin + radius + legend_spacing)
+			.attr("x", margin + radius + 3)
 			.attr("y", margin + 3* radius + legend_spacing )
 			.text("dropoff");
 
