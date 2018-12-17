@@ -450,8 +450,10 @@ whenDocumentLoaded(() => {
 			.attr("id", "legend_pickup_dropoff")
 			.attr("cx", margin)
 			.attr("cy", margin + 4* radius + 2*legend_spacing)
-			.attr("r", radius)
-			.attr("fill", "green");
+			.attr("r", radius-1)
+			.style("stroke-width", 2)    // set the stroke width
+		    .style("stroke", "red")      // set the line colour
+		    .style("fill", "blue");
 
 
 		canvas.append("text")
