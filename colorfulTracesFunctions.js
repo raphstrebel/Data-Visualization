@@ -141,7 +141,7 @@ function whenDocumentLoaded(action) {
 
 
 
-function getPickupAndDropoffNodes(data) {
+/*function getPickupAndDropoffNodes(data) {
 	let pickupNodes = [];
 	var newPickupNode;
 
@@ -172,8 +172,8 @@ function getPickupAndDropoffNodes(data) {
 	return {
 	    Pickup: pickupNodes,
 	    Dropoff: dropoffNodes
-	};;
-}
+	};
+}*/
 
 // make small box with info on node
 function handlePickupMouseOver(d) { 
@@ -186,7 +186,7 @@ function handlePickupMouseOver(d) {
 }
 
 // make info box dissapear (slowly)
-function handlePickupMouseOut(d) {		
+function handleMouseOut(d) {	
 	div.transition()
 	.duration(500)
 	.style("opacity", 0);	
@@ -202,42 +202,113 @@ function handleDropoffMouseOver(d) {
 		.style("top", (d3.event.pageY - 28) + "px");	
 }
 
-// make info box dissapear (slowly)
-function handleDropoffMouseOut(d) {		
-	div.transition()
-	.duration(500)
-	.style("opacity", 0);	
-}
-
 function hideAllNodes(d) {
 	canvas.selectAll("g").data(d).exit().remove();
 }
 
+function hideAllNodes() {
+	canvas.selectAll("g").remove();
+}
+
 function handlePickupMouseClick(node) {
 
-	handlePickupMouseOut(node);
+	handleMouseOut(node);
 	hideAllNodes(node);	
 
 	// show only this/or all pickup - node(s)
 	canvas.selectAll("g")
-			.data(database)
-				.enter()
-				.append("g")
-				//Pickup in red
-					.append("circle")
-					.attr("r" , radius)
-					.attr("transform", function(d) {
-						if(d.plng === node.plng && d.plat === node.plat) {
-							return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
-						}
-					})
-					.attr("fill", "red")
-					.on("mouseover", handlePickupMouseOver)
-					.on("mouseout", handlePickupMouseOut)
-					.on("click", handlePickupMouseClick);
+		.data(database)
+		.enter()
+		.append("g")
+		//Pickup in red
+			.append("circle")
+			.attr("r" , radius)
+			.attr("transform", function(d) {
+				if(d.plng === node.plng && d.plat === node.plat) {
+					return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
+				}
+			})
+			.attr("fill", "red")
+			.on("mouseover", handlePickupMouseOver)
+			.on("mouseout", handleMouseOut)
+			.on("click", handlePickupMouseClick);
 
 	/* show all paths from this node */
 
+}
+
+function showAllDropoffNodes() {
+	canvas.selectAll("g")
+		.data(database)
+		.enter()
+		.append("g")
+			//Dropoff in blue
+			.append("circle")
+			.attr("r" , radius)
+			.attr("transform", function(d) {
+				return "translate("+scaleX(d.dlng)+","+ scaleY(d.dlat)+")";
+			})
+			.attr("fill", "blue")
+			.on("mouseover", handleDropoffMouseOver)
+			.on("mouseout", handleMouseOut);
+}
+
+function showAllPickupNodes() {
+	canvas.selectAll("g")
+		.data(database)
+		.enter()
+		.append("g")
+			.append("circle")
+			.attr("r" , radius)
+			.attr("transform", function(d) {
+				return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
+			})
+			.attr("fill", "red")
+			.on("mouseover", handlePickupMouseOver)
+			.on("mouseout", handleMouseOut)
+			.on("click", handlePickupMouseClick);
+}
+
+function handleLegendDropoffClick(){
+	hideAllNodes();
+	showAllDropoffNodes();
+}
+
+function handleLegendPickupClick(){
+	hideAllNodes();
+	showAllPickupNodes();
+}
+
+function handleLegendPickupAndDropoffClick(){
+	hideAllNodes();
+
+	canvas.selectAll("g")
+		.data(database)
+		.enter()
+		.append("g")
+			//Dropoff in blue
+			.append("circle")
+			.attr("r" , radius)
+			.attr("transform", function(d) {
+				return "translate("+scaleX(d.dlng)+","+ scaleY(d.dlat)+")";
+			})
+			.attr("fill", "blue")
+			.on("mouseover", handleDropoffMouseOver)
+			.on("mouseout", handleMouseOut);
+
+	canvas.selectAll("g")
+		.data(database)
+			.append("g")
+			//Pickup in red
+				.append("circle")
+				.attr("r" , radius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
+				})
+				.attr("fill", "red")
+				.on("mouseover", handlePickupMouseOver)
+				.on("mouseout", handleMouseOut)
+				.on("click", handlePickupMouseClick);
 }
 
 whenDocumentLoaded(() => {
@@ -326,7 +397,7 @@ whenDocumentLoaded(() => {
 					})
 					.attr("fill", "blue")
 					.on("mouseover", handleDropoffMouseOver)
-					.on("mouseout", handleDropoffMouseOut);
+					.on("mouseout", handleMouseOut);
 
 		canvas.selectAll("g")
 			.data(data)
@@ -339,11 +410,11 @@ whenDocumentLoaded(() => {
 					})
 					.attr("fill", "red")
 					.on("mouseover", handlePickupMouseOver)
-					.on("mouseout", handlePickupMouseOut)
+					.on("mouseout", handleMouseOut)
 					.on("click", handlePickupMouseClick);
 
-	    // legend
 
+	    // legend for pickup
 		let legend_spacing = 7;
 
 		canvas.append("circle")
@@ -356,9 +427,10 @@ whenDocumentLoaded(() => {
 		canvas.append("text")
 			.attr("x", margin + radius + 3)
 			.attr("y", margin + radius)
-			.text("pickup");
+			.text("pickup")
+			.on("click", handleLegendPickupClick);;
 
-			// legend
+		// legend for dropoff
 		canvas.append("circle")
 			.attr("id", "legend_dropoff")
 			.attr("cx", margin)
@@ -370,7 +442,23 @@ whenDocumentLoaded(() => {
 		canvas.append("text")
 			.attr("x", margin + radius + 3)
 			.attr("y", margin + 3* radius + legend_spacing )
-			.text("dropoff");
+			.text("dropoff")
+			.on("click", handleLegendDropoffClick);
+
+		// legend for both pickup and dropoff
+		canvas.append("circle")
+			.attr("id", "legend_pickup_dropoff")
+			.attr("cx", margin)
+			.attr("cy", margin + 4* radius + 2*legend_spacing)
+			.attr("r", radius)
+			.attr("fill", "green");
+
+
+		canvas.append("text")
+			.attr("x", margin + radius + 3)
+			.attr("y", margin + 5* radius + 2*legend_spacing )
+			.text("pickup and dropoff")
+			.on("click", handleLegendPickupAndDropoffClick);
 
 
 		/*
