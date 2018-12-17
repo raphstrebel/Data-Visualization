@@ -1,11 +1,13 @@
 // Tutorials followed :
 // https://maptimeboston.github.io/leaflet-intro/
 // https://www.tutorialspoint.com/leafletjs/leafletjs_getting_started.html
+// Course exercises
+// http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
+// http://bl.ocks.org/d3noob/a22c42db65eb00d4e369
 
 
 
-
-class MapPlot {
+/*class MapPlot {
 
 	constructor(svg_element_id) {
 		this.svg = d3.select('#' + svg_element_id);
@@ -107,14 +109,18 @@ class MapPlot {
 				if(idToLngLat.hasOwnProperty(point)) {
 					L.marker([idToLngLat[point][0], idToLngLat[point][1]]).addTo(map);
 				}
-			});*/
+			});/
 		});
 	}
-}
+}*/
 
-function test() {
-	console.log("hey man");
-}
+// global variable
+const radius = 5;
+const width = 1000;
+const height = 700;
+const margin = 5;
+var svg;
+var div;
 
 
 
@@ -127,6 +133,39 @@ function whenDocumentLoaded(action) {
 	}
 }
 
+// make small box with info on node
+function handlePickupMouseOver(d) { 
+
+	div.transition().style("opacity", .9);		
+		
+	div.html(d.plat + "<br/>"  + d.plng)	
+		.style("left", (d3.event.pageX) + "px")		
+		.style("top", (d3.event.pageY - 28) + "px");	
+}
+
+// make info box dissapear (slowly)
+function handlePickupMouseOut(d) {		
+	div.transition()
+	.duration(500)
+	.style("opacity", 0);	
+}
+
+// make small box with info on node
+function handleDropoffMouseOver(d) { 
+
+	div.transition().style("opacity", .9);		
+		
+	div.html(d.dlat + "<br/>"  + d.dlng)	
+		.style("left", (d3.event.pageX) + "px")		
+		.style("top", (d3.event.pageY - 28) + "px");	
+}
+
+// make info box dissapear (slowly)
+function handleDropoffMouseOut(d) {		
+	div.transition()
+	.duration(500)
+	.style("opacity", 0);	
+}
 
 whenDocumentLoaded(() => {
 
@@ -146,12 +185,6 @@ whenDocumentLoaded(() => {
 
 	*/
 
-	// global variable
-	let width = 1000;
-	let height = 700;
-
-	let margin = 5;
-	let radius = 5;
 
 
 	// scale
@@ -161,10 +194,24 @@ whenDocumentLoaded(() => {
 	// projection
 	let projection = d3.geoMercator()
 
-
 	let canvas = d3.select("#network")
 		.attr("width", width + margin)
 		.attr("height", height + margin);
+
+	// Adds the svg canvas
+	svg = d3.select("body")
+	    .append("svg")
+	        .attr("width", width + margin + margin)
+	        .attr("height", height + margin + margin)
+	    .append("g")
+	        .attr("transform", 
+	              "translate(" + margin + "," + margin + ")");
+
+	div = d3.select("body").append("div")	
+	    .attr("class", "infoBox")				
+	    .style("opacity", 0);
+
+
 
 	d3.csv("data/dataviz.csv").then( (data) => {
 		// Creating the scale
@@ -185,17 +232,19 @@ whenDocumentLoaded(() => {
 			.domain([minLat, maxLat])
 			.range([height, margin]);
 
-			canvas.selectAll("g")
-				.data(data)
-					.enter()
-					.append("g")
-					//Dropoff in blue
-						.append("circle")
-						.attr("r" , radius)
-						.attr("transform", function(d) {
-							return "translate("+scaleX(d.dlng)+","+ scaleY(d.dlat)+")";
-						})
-						.attr("fill", "blue");
+		canvas.selectAll("g")
+			.data(data)
+				.enter()
+				.append("g")
+				//Dropoff in blue
+					.append("circle")
+					.attr("r" , radius)
+					.attr("transform", function(d) {
+						return "translate("+scaleX(d.dlng)+","+ scaleY(d.dlat)+")";
+					})
+					.attr("fill", "blue")
+					.on("mouseover", handleDropoffMouseOver)
+					.on("mouseout", handleDropoffMouseOut);	
 
 		canvas.selectAll("g")
 			.data(data)
@@ -206,7 +255,9 @@ whenDocumentLoaded(() => {
 					.attr("transform", function(d) {
 						return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
 					})
-					.attr("fill", "red");
+					.attr("fill", "red")
+					.on("mouseover", handlePickupMouseOver)
+					.on("mouseout", handlePickupMouseOut);		
 
 
 	  // legend
