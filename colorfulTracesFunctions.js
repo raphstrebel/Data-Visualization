@@ -139,6 +139,18 @@ function whenDocumentLoaded(action) {
 	}
 }
 
+function getPathsFromNode(node) {
+
+	let toReturn = [];
+
+	database.forEach((row) => {
+		if(node.plat === row.plat && node.plng === row.plng) {
+			toReturn.push(row);
+		}	
+	});
+
+	return toReturn;
+}
 
 
 /*function getPickupAndDropoffNodes(data) {
@@ -234,8 +246,28 @@ function handlePickupMouseClick(node) {
 			.on("click", handlePickupMouseClick);
 
 	/* show all paths from this node */
+	let paths = getPathsFromNode(node);
+
+	console.log(paths);
+
+	// must show all nodes of these paths
+	// the paths are in "osmID" so we must use "OSMToLatLngDictionary" to convert them
+
+
+	// EVERY THING BREAKS DOWN TO CONSTRUCTING THIS METHOD : showNode(node), who should draw node on the network (keeping the other ones visible)
 
 }
+
+/*function showNode(node) {
+	canvas.selectAll("g")
+		.append("g")
+			.append("circle")
+			.attr("r" , radius)
+			.attr("transform", "translate("+scaleX(node.lng)+","+ scaleY(node.lat)+")")
+			.attr("fill", "green")
+			.on("mouseover", handleDropoffMouseOver)
+			.on("mouseout", handleMouseOut);
+}*/
 
 function showAllDropoffNodes() {
 	canvas.selectAll("g")
