@@ -121,6 +121,12 @@ const height = 700;
 const margin = 5;
 var svg;
 var div;
+var canvas;
+var database;
+var pickupNodes;
+var dropoffNodes;
+var scaleX;
+var scaleY;
 
 
 
@@ -131,6 +137,42 @@ function whenDocumentLoaded(action) {
 		// `DOMContentLoaded` already fired
 		action();
 	}
+}
+
+
+
+function getPickupAndDropoffNodes(data) {
+	let pickupNodes = [];
+	var newPickupNode;
+
+	let dropoffNodes = [];
+	var newDropoffNode;
+
+	data.forEach((row) => {
+		newPickupNode = {
+			lat: parseFloat(row.plat),
+			lng: parseFloat(row.plng)
+		};
+
+		// comparison doesn't work, adds all nodes
+		if(!pickupNodes.includes(newPickupNode)) {
+			pickupNodes.push(newPickupNode);
+		}
+
+		newDropoffNode = {
+			lat: parseFloat(row.dlat),
+			lng: parseFloat(row.dlng)
+		};
+
+		if(!dropoffNodes.includes(newDropoffNode)) {
+			dropoffNodes.push(newDropoffNode);
+		}
+	});
+
+	return {
+	    Pickup: pickupNodes,
+	    Dropoff: dropoffNodes
+	};;
 }
 
 // make small box with info on node
@@ -167,6 +209,37 @@ function handleDropoffMouseOut(d) {
 	.style("opacity", 0);	
 }
 
+function hideAllNodes(d) {
+	canvas.selectAll("g").data(d).exit().remove();
+}
+
+function handlePickupMouseClick(node) {
+
+	handlePickupMouseOut(node);
+	hideAllNodes(node);	
+
+	// show only this/or all pickup - node(s)
+	canvas.selectAll("g")
+			.data(database)
+				.enter()
+				.append("g")
+				//Pickup in red
+					.append("circle")
+					.attr("r" , radius)
+					.attr("transform", function(d) {
+						if(d.plng === node.plng && d.plat === node.plat) {
+							return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
+						}
+					})
+					.attr("fill", "red")
+					.on("mouseover", handlePickupMouseOver)
+					.on("mouseout", handlePickupMouseOut)
+					.on("click", handlePickupMouseClick);
+
+	/* show all paths from this node */
+
+}
+
 whenDocumentLoaded(() => {
 
 	/* UNCOMMENT THIS TO SEE THE MAP
@@ -194,15 +267,15 @@ whenDocumentLoaded(() => {
 	// projection
 	let projection = d3.geoMercator()
 
-	let canvas = d3.select("#network")
+	canvas = d3.select("#network")
 		.attr("width", width + margin)
 		.attr("height", height + margin);
 
 	// Adds the svg canvas
 	svg = d3.select("body")
 	    .append("svg")
-	        .attr("width", width + margin + margin)
-	        .attr("height", height + margin + margin)
+	        .attr("width", width + margin)
+	        .attr("height", height + margin)
 	    .append("g")
 	        .attr("transform", 
 	              "translate(" + margin + "," + margin + ")");
@@ -214,6 +287,15 @@ whenDocumentLoaded(() => {
 
 
 	d3.csv("data/dataviz.csv").then( (data) => {
+		// save data 
+		database = data;
+
+
+		// Load the pickup nodes (loaded once even if they appear multiple times)
+		//const pickup_and_dropoff_nodes = getPickupAndDropoffNodes(data);
+		//pickupNodes = pickup_and_dropoff_nodes.Pickup;
+		//dropoffNodes = pickup_and_dropoff_nodes.Dropoff;
+
 		// Creating the scale
 
 		// find the domain
@@ -224,11 +306,11 @@ whenDocumentLoaded(() => {
 		let maxLat = d3.max(data, (d) => d3.max([d.plat,d.dlat]));
 
 		// Define the scale
-		let scaleX = d3.scaleLinear()
+		scaleX = d3.scaleLinear()
 			.domain([minLng, maxLng])
 			.range([margin, width]);
 
-		let scaleY = d3.scaleLinear()
+		scaleY = d3.scaleLinear()
 			.domain([minLat, maxLat])
 			.range([height, margin]);
 
@@ -244,7 +326,7 @@ whenDocumentLoaded(() => {
 					})
 					.attr("fill", "blue")
 					.on("mouseover", handleDropoffMouseOver)
-					.on("mouseout", handleDropoffMouseOut);	
+					.on("mouseout", handleDropoffMouseOut);
 
 		canvas.selectAll("g")
 			.data(data)
@@ -257,10 +339,10 @@ whenDocumentLoaded(() => {
 					})
 					.attr("fill", "red")
 					.on("mouseover", handlePickupMouseOver)
-					.on("mouseout", handlePickupMouseOut);		
+					.on("mouseout", handlePickupMouseOut)
+					.on("click", handlePickupMouseClick);
 
-
-	  // legend
+	    // legend
 
 		let legend_spacing = 7;
 
