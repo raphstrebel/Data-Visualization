@@ -124,6 +124,7 @@ var div;
 var canvas;
 var database;
 var osmToLatLng;
+var osmToOccurences;
 var pickupNodes;
 var dropoffNodes;
 var scaleX;
@@ -144,8 +145,13 @@ function getPathsFromNode(node) {
 
 	let toReturn = [];
 
+//	console.log(typeof osmToLatLng[node["pnode"]][0]);
+	
+	console.log(typeof osmToLatLng[node["pnode"]][0] + ", " + osmToLatLng[node["pnode"]][0]);
 	database.forEach((row) => {
-		if(node.plat === row.plat && node.plng === row.plng) {
+		console.log(typeof row.plat + ", " + row.plat);
+		if(osmToLatLng[node["pnode"]][0] === row.plat && osmToLatLng[node["pnode"]][1] === row.plng) {
+			console.log("OK!");
 			toReturn.push(row);
 		}	
 	});
@@ -189,11 +195,20 @@ function getPathsFromNode(node) {
 }*/
 
 // make small box with info on node
+function handleDropoffMouseOver(d) { 
+
+	div.transition().style("opacity", .9);		
+		
+	div.html(osmToOccurences[d["dnode"]])	
+		.style("left", (d3.event.pageX) + "px")		
+		.style("top", (d3.event.pageY - 28) + "px");	
+}
+
 function handlePickupMouseOver(d) { 
 
 	div.transition().style("opacity", .9);		
 		
-	div.html(d.plat + "<br/>"  + d.plng)	
+	div.html(osmToOccurences[d["pnode"]])	
 		.style("left", (d3.event.pageX) + "px")		
 		.style("top", (d3.event.pageY - 28) + "px");	
 }
@@ -203,16 +218,6 @@ function handleMouseOut(d) {
 	div.transition()
 	.duration(500)
 	.style("opacity", 0);	
-}
-
-// make small box with info on node
-function handleDropoffMouseOver(d) { 
-
-	div.transition().style("opacity", .9);		
-		
-	div.html(d.dlat + "<br/>"  + d.dlng)	
-		.style("left", (d3.event.pageX) + "px")		
-		.style("top", (d3.event.pageY - 28) + "px");	
 }
 
 function hide(nodeClass) {
@@ -233,11 +238,13 @@ function hideAllNodes() {
 
 function handlePickupMouseClick(node) {
 
+	console.log(node);
+
 	handleMouseOut(node);
 	hide(".Pickup");	
 
 	// show only this/or all pickup - node(s)
-	canvas.selectAll("g")
+	/*canvas.selectAll("g")
 		.data(database)
 		.enter()
 		.append("g")
@@ -252,13 +259,13 @@ function handlePickupMouseClick(node) {
 			.attr("fill", "red")
 			.on("mouseover", handlePickupMouseOver)
 			.on("mouseout", handleMouseOut)
-			.on("click", handlePickupMouseClick);
+			.on("click", handlePickupMouseClick);*/
 
 	/* show all paths from this node */
 	let paths = getPathsFromNode(node);
 
 	console.log(paths);
-	canvas.selectAll("g")
+	/*canvas.selectAll("g")
 		.data(database)
 		.enter()
 		.append("g")
@@ -271,9 +278,9 @@ function handlePickupMouseClick(node) {
 				}
 			})
 			.attr("fill", "red")
-			.on("mouseover", handlePickupMouseOver)
+			.on("mouseover", handleDropoffMouseOver)
 			.on("mouseout", handleMouseOut)
-			.on("click", handlePickupMouseClick);
+			.on("click", handlePickupMouseClick);*/
 
 	// must show all nodes of these paths
 	// the paths are in "osmID" so we must use "OSMToLatLngDictionary" to convert them
@@ -406,13 +413,18 @@ whenDocumentLoaded(() => {
 		return data;
 	});
 
+	const osmToOccurences_promise = $.getJSON("data/nodesToOccurences.json", function(json){}).then((data) => {
+		return data;
+	});
+
 	// promise for database and osmID to lat and lng dictionary
-	Promise.all([database_promise, osmToLatLng_promise, pickupNodes_promise, dropoffNodes_promise]).then((results) => {
+	Promise.all([database_promise, osmToLatLng_promise, pickupNodes_promise, dropoffNodes_promise, osmToOccurences_promise]).then((results) => {
 
 		database = results[0];
 		osmToLatLng = results[1];
 		pickupNodes = results[2];
 		dropoffNodes = results[3];
+		osmToOccurences = results[4];
 
 		// Creating the scale
 
@@ -486,8 +498,6 @@ whenDocumentLoaded(() => {
 			.on("click", handleLegendPickupAndDropoffClick);
 		});
 });
-//		console.log(osmToLatLng_promise);
-
 
 
 
