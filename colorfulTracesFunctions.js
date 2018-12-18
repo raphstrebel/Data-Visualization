@@ -123,6 +123,7 @@ var svg;
 var div;
 var canvas;
 var database;
+var osmToLatLng;
 var pickupNodes;
 var dropoffNodes;
 var scaleX;
@@ -362,7 +363,6 @@ whenDocumentLoaded(() => {
 	*/
 
 
-
 	// scale
 	let sacleMode = d3.scaleLinear()
 
@@ -389,24 +389,33 @@ whenDocumentLoaded(() => {
 
 
 
-	d3.csv("data/dataviz.csv").then( (data) => {
+	let database_promise = d3.csv("data/dataviz.csv").then( (data) => {
 		// save data 
-		database = data;
+		return data;
+	});
 
 
-		// Load the pickup nodes (loaded once even if they appear multiple times)
-		//const pickup_and_dropoff_nodes = getPickupAndDropoffNodes(data);
-		//pickupNodes = pickup_and_dropoff_nodes.Pickup;
-		//dropoffNodes = pickup_and_dropoff_nodes.Dropoff;
+	// Load the dictionary of OSM node ID to number of occurences of this node
+	const osmToLatLng_promise = $.getJSON("data/OSMToLatLngDictionary.json", function(json){}).then((data) => {
+		return data;
+	});
+
+	Promise.all([database_promise, osmToLatLng_promise]).then((results) => {
+
+		database = results[0];
+		console.log(database);
+
+		osmToLatLng = results[1];
+		console.log(osmToLatLng["302030300"]) ;
 
 		// Creating the scale
 
 		// find the domain
-		let minLng = d3.min(data, (d) => d3.min([d.plng,d.dlng]));
-		let maxLng = d3.max(data, (d) => d3.max([d.plng,d.dlng]));
+		let minLng = d3.min(database, (d) => d3.min([d.plng,d.dlng]));
+		let maxLng = d3.max(database, (d) => d3.max([d.plng,d.dlng]));
 
-		let minLat = d3.min(data, (d) => d3.min([d.plat,d.dlat]));
-		let maxLat = d3.max(data, (d) => d3.max([d.plat,d.dlat]));
+		let minLat = d3.min(database, (d) => d3.min([d.plat,d.dlat]));
+		let maxLat = d3.max(database, (d) => d3.max([d.plat,d.dlat]));
 
 		// Define the scale
 		scaleX = d3.scaleLinear()
@@ -417,8 +426,9 @@ whenDocumentLoaded(() => {
 			.domain([minLat, maxLat])
 			.range([height, margin]);
 
+
 		canvas.selectAll("g")
-			.data(data)
+			.data(database)
 				.enter()
 				.append("g")
 				//Dropoff in blue
@@ -432,7 +442,7 @@ whenDocumentLoaded(() => {
 					.on("mouseout", handleMouseOut);
 
 		canvas.selectAll("g")
-			.data(data)
+			.data(database)
 				.append("g")
 				//Pickup in red
 					.append("circle")
@@ -493,6 +503,11 @@ whenDocumentLoaded(() => {
 			.attr("y", margin + 5* radius + 2*legend_spacing )
 			.text("pickup and dropoff")
 			.on("click", handleLegendPickupAndDropoffClick);
+		});
+});
+//		console.log(osmToLatLng_promise);
+
+
 
 
 		/*
@@ -513,11 +528,7 @@ whenDocumentLoaded(() => {
 	//console.log(max)
 
 
-	});
-
-
 
 	//map.dragging.disable();
 	// plot object is global, you can inspect it in the dev-console
 
-});
