@@ -215,18 +215,26 @@ function handleDropoffMouseOver(d) {
 		.style("top", (d3.event.pageY - 28) + "px");	
 }
 
-function hideAllNodes(d) {
+function hide(nodeClass) {
+	canvas.selectAll(nodeClass).remove();
+}
+
+function hideAllPickupNodes(d) {
+	canvas.selectAll(".Pickup").data(pickupNodes).exit().remove();
+}
+
+/*function hideAllNodes(d) {
 	canvas.selectAll("g").data(d).exit().remove();
 }
 
 function hideAllNodes() {
 	canvas.selectAll("g").remove();
-}
+}*/
 
 function handlePickupMouseClick(node) {
 
 	handleMouseOut(node);
-	hideAllNodes(node);	
+	hide(".Pickup");	
 
 	// show only this/or all pickup - node(s)
 	canvas.selectAll("g")
@@ -250,6 +258,22 @@ function handlePickupMouseClick(node) {
 	let paths = getPathsFromNode(node);
 
 	console.log(paths);
+	canvas.selectAll("g")
+		.data(database)
+		.enter()
+		.append("g")
+		//Pickup in red
+			.append("circle")
+			.attr("r" , radius)
+			.attr("transform", function(d) {
+				if(d.plng === node.plng && d.plat === node.plat) {
+					return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
+				}
+			})
+			.attr("fill", "red")
+			.on("mouseover", handlePickupMouseOver)
+			.on("mouseout", handleMouseOut)
+			.on("click", handlePickupMouseClick);
 
 	// must show all nodes of these paths
 	// the paths are in "osmID" so we must use "OSMToLatLngDictionary" to convert them
@@ -271,77 +295,51 @@ function handlePickupMouseClick(node) {
 }*/
 
 function showAllDropoffNodes() {
-	canvas.selectAll("g")
-		.data(database)
-		.enter()
-		.append("g")
-			//Dropoff in blue
-			.append("circle")
-			.attr("r" , radius)
-			.attr("transform", function(d) {
-				return "translate("+scaleX(d.dlng)+","+ scaleY(d.dlat)+")";
-			})
-			.attr("fill", "blue")
-			.on("mouseover", handleDropoffMouseOver)
-			.on("mouseout", handleMouseOut);
+	canvas.selectAll(".Dropoff")
+			.data(dropoffNodes)
+				.enter()
+				//Dropoff in blue
+					.append("circle")
+					.attr("class", "Dropoff")
+					.attr("r" , radius)
+					.attr("transform", function(d) {
+						return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
+					})
+					.attr("fill", "blue")
+					.on("mouseover", handleDropoffMouseOver)
+					.on("mouseout", handleMouseOut);
 }
 
 function showAllPickupNodes() {
-	canvas.selectAll("g")
-		.data(database)
-		.enter()
-		.append("g")
-			.append("circle")
-			.attr("r" , radius)
-			.attr("transform", function(d) {
-				return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
-			})
-			.attr("fill", "red")
-			.on("mouseover", handlePickupMouseOver)
-			.on("mouseout", handleMouseOut)
-			.on("click", handlePickupMouseClick);
+	canvas.selectAll(".Pickup")
+			.data(pickupNodes)
+				.enter()
+				//Pickup in red
+					.append("circle")
+					.attr("class", "Pickup")
+					.attr("r" , radius)
+					.attr("transform", function(d) {
+						return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
+					})
+					.attr("fill", "red")
+					.on("mouseover", handlePickupMouseOver)
+					.on("mouseout", handleMouseOut)
+					.on("click", handlePickupMouseClick);
 }
 
 function handleLegendDropoffClick(){
-	hideAllNodes();
+	hide(".Pickup");
 	showAllDropoffNodes();
 }
 
 function handleLegendPickupClick(){
-	hideAllNodes();
+	hide(".Dropoff");
 	showAllPickupNodes();
 }
 
 function handleLegendPickupAndDropoffClick(){
-	hideAllNodes();
-
-	canvas.selectAll("g")
-		.data(database)
-		.enter()
-		.append("g")
-			//Dropoff in blue
-			.append("circle")
-			.attr("r" , radius)
-			.attr("transform", function(d) {
-				return "translate("+scaleX(d.dlng)+","+ scaleY(d.dlat)+")";
-			})
-			.attr("fill", "blue")
-			.on("mouseover", handleDropoffMouseOver)
-			.on("mouseout", handleMouseOut);
-
-	canvas.selectAll("g")
-		.data(database)
-			.append("g")
-			//Pickup in red
-				.append("circle")
-				.attr("r" , radius)
-				.attr("transform", function(d) {
-					return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
-				})
-				.attr("fill", "red")
-				.on("mouseover", handlePickupMouseOver)
-				.on("mouseout", handleMouseOut)
-				.on("click", handlePickupMouseClick);
+	showAllDropoffNodes();
+	showAllPickupNodes();
 }
 
 whenDocumentLoaded(() => {
@@ -388,25 +386,33 @@ whenDocumentLoaded(() => {
 	    .style("opacity", 0);
 
 
-
-	let database_promise = d3.csv("data/dataviz.csv").then( (data) => {
-		// save data 
+	// Load the database
+	const database_promise = d3.csv("data/dataviz.csv").then( (data) => {
 		return data;
 	});
-
 
 	// Load the dictionary of OSM node ID to number of occurences of this node
 	const osmToLatLng_promise = $.getJSON("data/OSMToLatLngDictionary.json", function(json){}).then((data) => {
 		return data;
 	});
 
-	Promise.all([database_promise, osmToLatLng_promise]).then((results) => {
+	// Load the list of pickup nodes
+	const pickupNodes_promise = d3.csv("data/pickupNodes.csv").then( (data) => {
+		return data;
+	});
+
+	// Load the list of pickup nodes
+	const dropoffNodes_promise = d3.csv("data/dropoffNodes.csv").then( (data) => {
+		return data;
+	});
+
+	// promise for database and osmID to lat and lng dictionary
+	Promise.all([database_promise, osmToLatLng_promise, pickupNodes_promise, dropoffNodes_promise]).then((results) => {
 
 		database = results[0];
-		console.log(database);
-
 		osmToLatLng = results[1];
-		console.log(osmToLatLng["302030300"]) ;
+		pickupNodes = results[2];
+		dropoffNodes = results[3];
 
 		// Creating the scale
 
@@ -426,34 +432,9 @@ whenDocumentLoaded(() => {
 			.domain([minLat, maxLat])
 			.range([height, margin]);
 
+		showAllDropoffNodes();
+		showAllPickupNodes();
 
-		canvas.selectAll("g")
-			.data(database)
-				.enter()
-				.append("g")
-				//Dropoff in blue
-					.append("circle")
-					.attr("r" , radius)
-					.attr("transform", function(d) {
-						return "translate("+scaleX(d.dlng)+","+ scaleY(d.dlat)+")";
-					})
-					.attr("fill", "blue")
-					.on("mouseover", handleDropoffMouseOver)
-					.on("mouseout", handleMouseOut);
-
-		canvas.selectAll("g")
-			.data(database)
-				.append("g")
-				//Pickup in red
-					.append("circle")
-					.attr("r" , radius)
-					.attr("transform", function(d) {
-						return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
-					})
-					.attr("fill", "red")
-					.on("mouseover", handlePickupMouseOver)
-					.on("mouseout", handleMouseOut)
-					.on("click", handlePickupMouseClick);
 
 
 	    // legend for pickup
