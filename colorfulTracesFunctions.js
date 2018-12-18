@@ -148,9 +148,8 @@ function getPathsFromNode(node) {
 //	console.log(typeof osmToLatLng[node["pnode"]][0]);
 	database.forEach((row) => {
 		if(node["pnode"] === row.pnode) {
-			console.log("OK!");
 			toReturn.push(row);
-		}	
+		}
 	});
 
 	return toReturn;
@@ -192,29 +191,29 @@ function getPathsFromNode(node) {
 }*/
 
 // make small box with info on node
-function handleDropoffMouseOver(d) { 
+function handleDropoffMouseOver(d) {
 
-	div.transition().style("opacity", .9);		
-		
-	div.html(osmToOccurences[d["dnode"]])	
-		.style("left", (d3.event.pageX) + "px")		
-		.style("top", (d3.event.pageY - 28) + "px");	
+	div.transition().style("opacity", .9);
+
+	div.html(osmToOccurences[d["dnode"]])
+		.style("left", (d3.event.pageX) + "px")
+		.style("top", (d3.event.pageY - 28) + "px");
 }
 
-function handlePickupMouseOver(d) { 
+function handlePickupMouseOver(d) {
 
-	div.transition().style("opacity", .9);		
-		
-	div.html(osmToOccurences[d["pnode"]])	
-		.style("left", (d3.event.pageX) + "px")		
-		.style("top", (d3.event.pageY - 28) + "px");	
+	div.transition().style("opacity", .9);
+
+	div.html(osmToOccurences[d["pnode"]])
+		.style("left", (d3.event.pageX) + "px")
+		.style("top", (d3.event.pageY - 28) + "px");
 }
 
 // make info box dissapear (slowly)
-function handleMouseOut(d) {	
+function handleMouseOut(d) {
 	div.transition()
 	.duration(500)
-	.style("opacity", 0);	
+	.style("opacity", 0);
 }
 
 function hide(nodeClass) {
@@ -232,52 +231,56 @@ function hideAllPickupNodes(d) {
 function hideAllNodes() {
 	canvas.selectAll("g").remove();
 }*/
+function doSomeThing(d){
+	console.log(d);
+}
 
 function handlePickupMouseClick(node) {
 
-	console.log(node);
+
 
 	handleMouseOut(node);
-	hide(".Pickup");	
+	hide(".Pickup");
+	hide(".Dropoff");
 
-	// show only this/or all pickup - node(s)
-	/*canvas.selectAll("g")
-		.data(database)
-		.enter()
-		.append("g")
-		//Pickup in red
-			.append("circle")
-			.attr("r" , radius)
-			.attr("transform", function(d) {
-				if(d.plng === node.plng && d.plat === node.plat) {
-					return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
-				}
-			})
-			.attr("fill", "red")
-			.on("mouseover", handlePickupMouseOver)
-			.on("mouseout", handleMouseOut)
-			.on("click", handlePickupMouseClick);*/
 
 	/* show all paths from this node */
 	let paths = getPathsFromNode(node);
 
 	console.log(paths);
-	/*canvas.selectAll("g")
-		.data(database)
+
+	canvas.selectAll(".Path")
+		.data(paths)
 		.enter()
 		.append("g")
-		//Pickup in red
+			.attr("class", "Path")
+			.on("mouseover", doSomeThing)
+			.selectAll(".NodePath")
+			.data(function(d){
+				//console.log(d["road"]);
+
+				return JSON.parse(d["road"]);
+				/*
+				return {
+					road : JSON.parse(d["road"]),
+					dnode : d["dnode"]
+				};*/
+			}).enter()
 			.append("circle")
-			.attr("r" , radius)
-			.attr("transform", function(d) {
-				if(d.plng === node.plng && d.plat === node.plat) {
-					return "translate("+scaleX(d.plng)+","+ scaleY(d.plat)+")";
-				}
-			})
-			.attr("fill", "red")
-			.on("mouseover", handleDropoffMouseOver)
-			.on("mouseout", handleMouseOut)
-			.on("click", handlePickupMouseClick);*/
+				.attr("fill", "green") /*function(d){
+					console.log(d);
+					//console.log(d.dnode);
+					if (d != 1){
+						return "green";
+					}
+					else {
+						return "blue";
+					}
+				})*/
+				.attr("r", radius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
+				});
 
 	// must show all nodes of these paths
 	// the paths are in "osmID" so we must use "OSMToLatLngDictionary" to convert them
@@ -382,11 +385,11 @@ whenDocumentLoaded(() => {
 	        .attr("width", width + margin)
 	        .attr("height", height + margin)
 	    .append("g")
-	        .attr("transform", 
+	        .attr("transform",
 	              "translate(" + margin + "," + margin + ")");
 
-	div = d3.select("body").append("div")	
-	    .attr("class", "infoBox")				
+	div = d3.select("body").append("div")
+	    .attr("class", "infoBox")
 	    .style("opacity", 0);
 
 
@@ -426,7 +429,7 @@ whenDocumentLoaded(() => {
 		// Creating the scale
 
 		// find the domain
-		let minLng = d3.min(database, (d) => d3.min([Number(osmToLatLng[d["pnode"]][1]),Number(osmToLatLng[d["dnode"]][1])]));
+		let minLng = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][1],osmToLatLng[d["dnode"]][1]]));
 		let maxLng = d3.max(database, (d) => d3.max([osmToLatLng[d["pnode"]][1],osmToLatLng[d["dnode"]][1]]));
 
 		let minLat = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][0],osmToLatLng[d["dnode"]][0]]));
@@ -454,13 +457,14 @@ whenDocumentLoaded(() => {
 				.attr("cx", margin)
 				.attr("cy", margin)
 				.attr("r", radius)
-				.attr("fill", "red");
+				.attr("fill", "red")
+				.on("click", handleLegendPickupClick);
 
 		canvas.append("text")
 			.attr("x", margin + radius + 3)
 			.attr("y", margin + radius)
 			.text("pickup")
-			.on("click", handleLegendPickupClick);;
+			.on("click", handleLegendPickupClick);
 
 		// legend for dropoff
 		canvas.append("circle")
@@ -468,7 +472,8 @@ whenDocumentLoaded(() => {
 			.attr("cx", margin)
 			.attr("cy", margin + 2* radius + legend_spacing)
 			.attr("r", radius)
-			.attr("fill", "blue");
+			.attr("fill", "blue")
+			.on("click", handleLegendDropoffClick);
 
 
 		canvas.append("text")
@@ -477,15 +482,18 @@ whenDocumentLoaded(() => {
 			.text("dropoff")
 			.on("click", handleLegendDropoffClick);
 
+
+
 		// legend for both pickup and dropoff
 		canvas.append("circle")
 			.attr("id", "legend_pickup_dropoff")
 			.attr("cx", margin)
-			.attr("cy", margin + 4* radius + 2*legend_spacing)
+			.attr("cy", margin + 4* radius + 2* legend_spacing)
 			.attr("r", radius-1)
 			.style("stroke-width", 2)    // set the stroke width
 		    .style("stroke", "red")      // set the line colour
-		    .style("fill", "blue");
+		    .style("fill", "blue")
+				.on("click", handleLegendPickupAndDropoffClick);
 
 
 		canvas.append("text")
@@ -493,6 +501,21 @@ whenDocumentLoaded(() => {
 			.attr("y", margin + 5* radius + 2*legend_spacing )
 			.text("pickup and dropoff")
 			.on("click", handleLegendPickupAndDropoffClick);
+
+			// legend for path
+		canvas.append("circle")
+				.attr("id", "legend_path")
+				.attr("cx", margin)
+				.attr("cy", margin + 6* radius + 3*legend_spacing)
+				.attr("r", radius)
+				.attr("fill", "green");
+
+
+			canvas.append("text")
+				.attr("x", margin + radius + 3)
+				.attr("y", margin + 7* radius + 3*legend_spacing )
+				.text("path node")
+				//.on("click", handleLegendDropoffClick);
 		});
 });
 
@@ -519,4 +542,3 @@ whenDocumentLoaded(() => {
 
 	//map.dragging.disable();
 	// plot object is global, you can inspect it in the dev-console
-
