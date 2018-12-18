@@ -19,6 +19,11 @@ h4{
 	height: 100%;
 }
 
+body  {
+  /*background-image: url("images/background1.jpg");*/
+  background-color: #cccccc;
+}
+
 
 div.infoBox {	
     position: absolute;			
