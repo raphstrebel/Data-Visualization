@@ -145,7 +145,6 @@ function getPathsFromNode(node) {
 
 	let toReturn = [];
 
-//	console.log(typeof osmToLatLng[node["pnode"]][0]);
 	database.forEach((row) => {
 		if(node["pnode"] === row.pnode) {
 			toReturn.push(row);
@@ -154,41 +153,6 @@ function getPathsFromNode(node) {
 
 	return toReturn;
 }
-
-
-/*function getPickupAndDropoffNodes(data) {
-	let pickupNodes = [];
-	var newPickupNode;
-
-	let dropoffNodes = [];
-	var newDropoffNode;
-
-	data.forEach((row) => {
-		newPickupNode = {
-			lat: parseFloat(row.plat),
-			lng: parseFloat(row.plng)
-		};
-
-		// comparison doesn't work, adds all nodes
-		if(!pickupNodes.includes(newPickupNode)) {
-			pickupNodes.push(newPickupNode);
-		}
-
-		newDropoffNode = {
-			lat: parseFloat(row.dlat),
-			lng: parseFloat(row.dlng)
-		};
-
-		if(!dropoffNodes.includes(newDropoffNode)) {
-			dropoffNodes.push(newDropoffNode);
-		}
-	});
-
-	return {
-	    Pickup: pickupNodes,
-	    Dropoff: dropoffNodes
-	};
-}*/
 
 // make small box with info on node
 function handleDropoffMouseOver(d) {
@@ -224,15 +188,8 @@ function hideAllPickupNodes(d) {
 	canvas.selectAll(".Pickup").data(pickupNodes).exit().remove();
 }
 
-/*function hideAllNodes(d) {
-	canvas.selectAll("g").data(d).exit().remove();
-}
-
-function hideAllNodes() {
-	canvas.selectAll("g").remove();
-}*/
 function doSomeThing(d){
-	console.log(d);
+	//console.log(d);
 }
 
 function handlePickupMouseClick(node) {
@@ -246,10 +203,8 @@ function handlePickupMouseClick(node) {
 
 	/* show all paths from this node */
 	let paths = getPathsFromNode(node);
-
-	console.log(paths);
-
-	canvas.selectAll(".Path")
+	
+	var p = canvas.selectAll(".Path")
 		.data(paths)
 		.enter()
 		.append("g")
@@ -277,10 +232,16 @@ function handlePickupMouseClick(node) {
 						return "blue";
 					}
 				})*/
+				.style("opacity", 0)
 				.attr("r", radius)
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
 				});
+
+	p.transition()
+	.duration(1000)
+	.delay(function(d,i){ return 50*i * (1 / 4); })
+	.style("opacity", 1);
 
 	// must show all nodes of these paths
 	// the paths are in "osmID" so we must use "OSMToLatLngDictionary" to convert them
@@ -290,19 +251,8 @@ function handlePickupMouseClick(node) {
 
 }
 
-/*function showNode(node) {
-	canvas.selectAll("g")
-		.append("g")
-			.append("circle")
-			.attr("r" , radius)
-			.attr("transform", "translate("+scaleX(node.lng)+","+ scaleY(node.lat)+")")
-			.attr("fill", "green")
-			.on("mouseover", handleDropoffMouseOver)
-			.on("mouseout", handleMouseOut);
-}*/
-
 function showAllDropoffNodes() {
-	canvas.selectAll(".Dropoff")
+	var p = canvas.selectAll(".Dropoff")
 			.data(dropoffNodes)
 				.enter()
 				//Dropoff in blue
@@ -313,28 +263,41 @@ function showAllDropoffNodes() {
 						return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
 					})
 					.attr("fill", "blue")
+					.style("opacity", 0)
 					.on("mouseover", handleDropoffMouseOver)
 					.on("mouseout", handleMouseOut);
+	p.transition()
+	.duration(1000)
+	.delay(function(d,i){ return 10*i * (1 / 4); })
+	.style("opacity", 1);
 }
 
 function showAllPickupNodes() {
-	canvas.selectAll(".Pickup")
+	var p = canvas.selectAll(".Pickup")
 			.data(pickupNodes)
 				.enter()
 				//Pickup in red
 					.append("circle")
+					//.transition().duration(1000).style("opacity", .9)
 					.attr("class", "Pickup")
 					.attr("r" , radius)
 					.attr("transform", function(d) {
 						return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
 					})
 					.attr("fill", "red")
+					.style("opacity", 0)
 					.on("mouseover", handlePickupMouseOver)
 					.on("mouseout", handleMouseOut)
 					.on("click", handlePickupMouseClick);
+
+
+	p.transition()
+	.duration(1000)
+	.delay(function(d,i){ return 100*i * (1 / 4); })
+	.style("opacity", 1);
 }
 
-function handleLegendDropoffClick(){
+function handleLegendDropoffClick(){	
 	hide(".Pickup");
 	showAllDropoffNodes();
 }
@@ -369,11 +332,11 @@ whenDocumentLoaded(() => {
 
 
 	// scale
-	let sacleMode = d3.scaleLinear()
+	//let sacleMode = d3.scaleLinear()
 
 
 	// projection
-	let projection = d3.geoMercator()
+	//let projection = d3.geoMercator()
 
 	canvas = d3.select("#network")
 		.attr("width", width + margin)
