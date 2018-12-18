@@ -424,12 +424,9 @@ whenDocumentLoaded(() => {
 		osmToOccurences = results[4];
 
 		// Creating the scale
-		database.map((d) => console.log(d + ", " + osmToLatLng[d["pnode"]][1]));
-		database.map((d) => console.log(d["dnode"]));
-		database.map((d) => console.log(osmToLatLng[d["dnode"]][1]));
 
 		// find the domain
-		let minLng = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][1],osmToLatLng[d["dnode"]][1]]));
+		let minLng = d3.min(database, (d) => d3.min([Number(osmToLatLng[d["pnode"]][1]),Number(osmToLatLng[d["dnode"]][1])]));
 		let maxLng = d3.max(database, (d) => d3.max([osmToLatLng[d["pnode"]][1],osmToLatLng[d["dnode"]][1]]));
 
 		let minLat = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][0],osmToLatLng[d["dnode"]][0]]));
