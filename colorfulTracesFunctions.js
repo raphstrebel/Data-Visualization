@@ -146,11 +146,8 @@ function getPathsFromNode(node) {
 	let toReturn = [];
 
 //	console.log(typeof osmToLatLng[node["pnode"]][0]);
-	
-	console.log(typeof osmToLatLng[node["pnode"]][0] + ", " + osmToLatLng[node["pnode"]][0]);
 	database.forEach((row) => {
-		console.log(typeof row.plat + ", " + row.plat);
-		if(osmToLatLng[node["pnode"]][0] === row.plat && osmToLatLng[node["pnode"]][1] === row.plng) {
+		if(node["pnode"] === row.pnode) {
 			console.log("OK!");
 			toReturn.push(row);
 		}	
@@ -394,7 +391,7 @@ whenDocumentLoaded(() => {
 
 
 	// Load the database
-	const database_promise = d3.csv("data/dataviz.csv").then( (data) => {
+	const database_promise = d3.csv("data/cleaned.csv").then( (data) => {
 		return data;
 	});
 
@@ -427,13 +424,16 @@ whenDocumentLoaded(() => {
 		osmToOccurences = results[4];
 
 		// Creating the scale
+		database.map((d) => console.log(d + ", " + osmToLatLng[d["pnode"]][1]));
+		database.map((d) => console.log(d["dnode"]));
+		database.map((d) => console.log(osmToLatLng[d["dnode"]][1]));
 
 		// find the domain
-		let minLng = d3.min(database, (d) => d3.min([d.plng,d.dlng]));
-		let maxLng = d3.max(database, (d) => d3.max([d.plng,d.dlng]));
+		let minLng = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][1],osmToLatLng[d["dnode"]][1]]));
+		let maxLng = d3.max(database, (d) => d3.max([osmToLatLng[d["pnode"]][1],osmToLatLng[d["dnode"]][1]]));
 
-		let minLat = d3.min(database, (d) => d3.min([d.plat,d.dlat]));
-		let maxLat = d3.max(database, (d) => d3.max([d.plat,d.dlat]));
+		let minLat = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][0],osmToLatLng[d["dnode"]][0]]));
+		let maxLat = d3.max(database, (d) => d3.max([osmToLatLng[d["pnode"]][0],osmToLatLng[d["dnode"]][0]]));
 
 		// Define the scale
 		scaleX = d3.scaleLinear()
