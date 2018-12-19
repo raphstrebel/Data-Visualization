@@ -58,7 +58,7 @@ function getPathsToNode(nodeID) {
 	let toReturn = [];
 
 	database.forEach((row) => {
-		if(nodeID === row.dnode) {
+		if(nodeID == row.dnode) {
 			toReturn.push(row);
 		}
 	});
@@ -244,8 +244,6 @@ function drawPaths(paths, nodeID) {
 				.delay(function(d,i){ return 50*i * (1 / 4); })
 				.style("opacity", 1);
 
-
-
 	d3.selection.prototype.moveUp = function() {
 		return this.each(function() {
 			this.parentNode.appendChild(this);
@@ -261,6 +259,7 @@ function handleDropoffMouseClick(node) {
 	handleMouseOut();
 	hide(".Pickup");
 	hide(".Dropoff");
+	hide(".Path");
 
 	var nodeID;
 
@@ -279,19 +278,6 @@ function handleDropoffMouseClick(node) {
 	showNodeOnMap(nodeID, "Dropoff");
 }
 
-/*function handleDropoffMouseClickByNodeID(nodeID) {
-	handleMouseOut();
-	hide(".Pickup");
-	hide(".Dropoff");
-
-	// show all paths from this node
-	let paths = getPathsToNode(nodeID);
-	drawPaths(paths, nodeID);
-
-	// Show node on map (in information section)
-	showNodeOnMap(nodeID, "Dropoff");
-}*/
-
 function handlePickupMouseClick(node) {
 	handleMouseOut();
 	hide(".Pickup");
@@ -309,26 +295,9 @@ function handlePickupMouseClick(node) {
 
 	drawPaths(paths, nodeID);
 
-	console.log(paths);
-
 	// Show node on map (in information section)
 	showNodeOnMap(nodeID, "Pickup");
 }
-
-/*function handlePickupMouseClickByNodeID(nodeID) {
-	handleMouseOut();
-	hide(".Pickup");
-	hide(".Dropoff");
-	hide(".Path");
-
-	// show all paths from this node 
-	let paths = getPathsFromNode(nodeID);
-
-	drawPaths(paths, nodeID);
-
-	// Show node on map (in information section)
-	showNodeOnMap(nodeID, "Pickup");
-}*/
 
 function showAllDropoffNodes() {
 	canvas.selectAll(".Dropoff")
