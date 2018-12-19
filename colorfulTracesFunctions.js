@@ -7,7 +7,7 @@
 
 // global variable
 const normalNodeRadius = 3;
-const pathNodeRadius = 1.5;
+const pathNodeRadius = 2;
 const width = 1000;
 const height = 700;
 const margin = 5;
@@ -199,6 +199,9 @@ function handlePickupMouseClick(node) {
 
 	canvas.selectAll(".Dropoff").moveUp();
 	canvas.selectAll(".Pickup").moveUp();
+
+	// Show node on map (in information section)
+	showNodeOnMap(node);
 }
 
 function showAllDropoffNodes() {
