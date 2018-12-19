@@ -128,6 +128,9 @@ var marker;
 
 
 
+
+
+
 function whenDocumentLoaded(action) {
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", action);
@@ -234,14 +237,17 @@ function handlePickupMouseClick(node) {
 
 	/* show all paths from this node */
 	let paths = getPathsFromNode(node);
-	
+
+	let toMoveUpPickup = new Array()
+	let toMoveUpDropOff = new Array()
+
 	var p = canvas.selectAll(".Path")
 		.data(paths)
 		.enter()
 		.append("g")
 			.attr("class", "Path")
 			.on("mouseover", doSomeThing)
-			.selectAll(".NodePath")
+			.selectAll(".Nodepath")
 			.data(function(d){
 				//console.log(d["road"]);
 
@@ -253,16 +259,31 @@ function handlePickupMouseClick(node) {
 				};*/
 			}).enter()
 			.append("circle")
-				.attr("fill", "green") /*function(d){
-					console.log(d);
+				.attr("fill", function(d){
 					//console.log(d.dnode);
-					if (d != 1){
-						return "green";
+					if (pickupNodesSet.has(d)){
+
+						return "red";
 					}
-					else {
+					if (dropOffNodesSet.has(d)){
 						return "blue";
 					}
-				})*/
+
+					return "green";
+				})
+				.attr("class", function(d){
+					if (pickupNodesSet.has(d)){
+						toMoveUpPickup.push(d)
+						return "Pickup";
+					}
+					if (dropOffNodesSet.has(d)){
+						toMoveUpDropOff.push(d)
+						return "Dropoff";
+					}
+
+					return "NodepathOnly";
+
+				})
 				.style("opacity", 0)
 				.attr("r", pathNodeRadius)
 				.attr("transform", function(d) {
@@ -275,8 +296,21 @@ function handlePickupMouseClick(node) {
 	.delay(function(d,i){ return 50*i * (1 / 4); })
 	.style("opacity", 1);
 
-	// Show node on map (in information section)
-	showNodeOnMap(node);
+	d3.selection.prototype.moveUp = function() {
+			return this.each(function() {
+					this.parentNode.appendChild(this);
+			});
+	};
+
+
+	canvas.selectAll(".Dropoff").moveUp();
+	canvas.selectAll(".Pickup").moveUp();
+
+	// must show all nodes of these paths
+	// the paths are in "osmID" so we must use "OSMToLatLngDictionary" to convert them
+
+
+	// EVERY THING BREAKS DOWN TO CONSTRUCTING THIS METHOD : showNode(node), who should draw node on the network (keeping the other ones visible)
 
 }
 
@@ -328,7 +362,10 @@ function showAllPickupNodes() {
 	.style("opacity", 1);
 }
 
-function handleLegendDropoffClick(){	
+
+
+
+function handleLegendDropoffClick(){
 	hide(".Pickup");
 	showAllDropoffNodes();
 }
@@ -407,6 +444,19 @@ whenDocumentLoaded(() => {
 		pickupNodes = results[2];
 		dropoffNodes = results[3];
 		osmToOccurences = results[4];
+
+		// Create sets useful to test if a particular node Id is
+		pickupNodesSet = new Set();
+		dropOffNodesSet = new Set();
+
+		pickupNodes.forEach(function(n){
+			pickupNodesSet.add(Number(n["pnode"]));
+		})
+
+		dropoffNodes.forEach(function(n){
+			dropOffNodesSet.add(Number(n["dnode"]));
+		})
+
 
 		// Creating the scale
 
@@ -501,7 +551,7 @@ whenDocumentLoaded(() => {
 			//.on("click", handleLegendPathClick);
 		});
 
-	
+
 });
 
 
