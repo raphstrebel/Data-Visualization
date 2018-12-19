@@ -205,6 +205,9 @@ function drawPaths(paths, nodeID) {
 			.on("mouseover", doNothing)
 			.selectAll(".Nodepath")
 			.data(function(d){
+				num = d["t"].charAt(0) + "" + d["t"].charAt(1)
+				console.log(d["road"] + "," + Number(num));
+				console.log(typeof d["road"])
 				return JSON.parse(d["road"]);
 			})
 			.enter()
@@ -286,11 +289,102 @@ function drawPaths(paths, nodeID) {
 	canvas.selectAll(".Selected").moveUp();
 }
 
-function showPickupAndDropoffNodesByOccurrence() {
+function showPickupAndDropoffByNbPickupsAndDropoffs() {
+
+	let pickupAndDropoffs = dropoffNodes.concat(pickupNodes);
+
+	var linearScale = d3.scaleLinear()
+		.domain([0, 20])
+		//.interpolate(d3.interpolateHcl) 
+		//.range(['blue','red']);
+		.range(['blue', 'green']);
+
+	canvas.selectAll(".Node")
+		.data(pickupAndDropoffs)
+			.enter()
+				.append("circle")
+				.attr("class", "Pickup")
+				.attr("r" , normalNodeRadius)
+				.attr("transform", function(d) {
+					if (d.hasOwnProperty("dnode")){
+						nodeId = d["dnode"];
+					} else if (d.hasOwnProperty("pnode")) {
+						nodeId = d["pnode"];
+					} else {
+						nodeId = d;
+					}
+					return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
+				})
+				.attr("fill", function(d,i){ 
+					if (d.hasOwnProperty("dnode")){
+						return linearScale([dropoffToNbDropoffs[d["dnode"]]]);
+					} else {
+						return linearScale(pickupToNbPickups[d["pnode"]]);
+					}
+				})
+				.style("opacity", 0)
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){ return  2*i; })
+				.style("opacity", 1);
+}
+
+function showPickupByNbPickups() {
+
+	var linearScale = d3.scaleLinear()
+		.domain([0, 20])
+		//.interpolate(d3.interpolateHcl) 
+		//.range(['blue','red']);
+		.range(['red', 'white']);
+
+	canvas.selectAll(".Node")
+		.data(pickupNodes)
+			.enter()
+				.append("circle")
+				.attr("class", "Pickup")
+				.attr("r" , normalNodeRadius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
+				})
+				.attr("fill", function(d,i){ 
+					return linearScale(pickupToNbPickups[d["pnode"]]);
+				})
+				.style("opacity", 0)
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){ return  2*i; })
+				.style("opacity", 1);
+}
+
+function showDropoffByNbDropoffs() {
+	var linearScale = d3.scaleLinear()
+		.domain([0, 5])
+		//.interpolate(d3.interpolateHcl) 
+		//.range(['blue','red']);
+		.range(['blue', 'DodgerBlue', 'white']);
+
+	canvas.selectAll(".Node")
+		.data(dropoffNodes)
+			.enter()
+				.append("circle")
+				.attr("class", "Pickup")
+				.attr("r" , normalNodeRadius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
+				})
+				.attr("fill", function(d,i){ 
+					return linearScale(dropoffToNbDropoffs[d["dnode"]]);
+				})
+				.style("opacity", 0)
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){ return  2*i; })
+				.style("opacity", 1);
+}
+
+function showAllNodesByOccurrence() {
 
 	let allNodes = Object.keys(osmToOccurences);
-
-	allPickupAndDropoffNodes = dropoffNodes.concat(pickupNodes);
 
 	var linearScale = d3.scaleLinear()
 		.domain([0, 100])
@@ -567,9 +661,15 @@ whenDocumentLoaded(() => {
 
 		// show pickup and dropoffs
 		//showAllDropoffNodes();
-		//showAllPickupNodes();
+		showAllPickupNodes();
 
-		showPickupAndDropoffNodesByOccurrence();
+		//showPickupAndDropoffByNbPickupsAndDropoffs();
+
+		//showPickupByNbPickups();
+		//showDropoffByNbDropoffs();
+
+		// for this one put background in black
+		//showAllNodesByOccurrence();
 
 	    // legend for pickup
 		let legend_spacing = 7;

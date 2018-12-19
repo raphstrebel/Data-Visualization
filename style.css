@@ -16,7 +16,8 @@ h4{
 }
 
 body  {
-  background-color: #cccccc;
+    /*background-color: #cccccc;*/
+    background-color: #000000;
 }
 
 .Pickup:hover {
