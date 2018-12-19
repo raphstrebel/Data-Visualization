@@ -41,12 +41,12 @@ function whenDocumentLoaded(action) {
 	}
 }
 
-function getPathsFromNode(node, nodeClass) {
+function getPathsFromNode(nodeID, nodeClass) {
 
 	let toReturn = [];
 
 	database.forEach((row) => {
-		if(node["pnode"] === row.pnode) {
+		if(nodeID === row.pnode) {
 			toReturn.push(row);
 		}
 	});
@@ -54,11 +54,11 @@ function getPathsFromNode(node, nodeClass) {
 	return toReturn;
 }
 
-function getPathsToNode(node) {
+function getPathsToNode(nodeID) {
 	let toReturn = [];
 
 	database.forEach((row) => {
-		if(node["dnode"] === row.dnode) {
+		if(nodeID === row.dnode) {
 			toReturn.push(row);
 		}
 	});
@@ -76,6 +76,7 @@ function handleDropoffMouseOver(d) {
 		.style("top", (d3.event.pageY - 28) + "px");
 }
 
+
 function handlePickupMouseOver(d) {
 
 	div.transition().style("opacity", .9);
@@ -85,8 +86,17 @@ function handlePickupMouseOver(d) {
 		.style("top", (d3.event.pageY - 28) + "px");
 }
 
+function handleMouseOverByNodeID(nodeID) {
+
+	div.transition().style("opacity", .9);
+
+	div.html(" occurences : " + osmToOccurences[nodeID] + "<br>" + " pickups : " + pickupToNbPickups[nodeID])
+		.style("left", (d3.event.pageX) + "px")
+		.style("top", (d3.event.pageY - 28) + "px");
+}
+
 // make info box dissapear (slowly)
-function handleMouseOut(d) {
+function handleMouseOut() {
 	div.transition()
 	.duration(500)
 	.style("opacity", 0);
@@ -96,7 +106,7 @@ function hide(nodeClass) {
 	canvas.selectAll(nodeClass).remove();
 }
 
-function hideAllPickupNodes(d) {
+function hideAllPickupNodes() {
 	canvas.selectAll(".Pickup").data(pickupNodes).exit().remove();
 }
 
@@ -126,18 +136,18 @@ function initializeMap(node) {
 	document.getElementById('map').style.cursor='default';
 }
 
-function showNodeOnMap(node, nodeClass) {
+function showNodeOnMap(nodeID, nodeClass) {
 	var nodeLat;
 	var nodeLng;
 
 	switch(nodeClass) {
 		case "Pickup":
-			nodeLat = Number(osmToLatLng[node["pnode"]][0]);
-			nodeLng = Number(osmToLatLng[node["pnode"]][1]);
+			nodeLat = Number(osmToLatLng[nodeID][0]);
+			nodeLng = Number(osmToLatLng[nodeID][1]);
 			break;
 		case "Dropoff":
-			nodeLat = Number(osmToLatLng[node["dnode"]][0]);
-			nodeLng = Number(osmToLatLng[node["dnode"]][1]);
+			nodeLat = Number(osmToLatLng[nodeID][0]);
+			nodeLng = Number(osmToLatLng[nodeID][1]);
 			break;
 		default:
 			break;
@@ -154,28 +164,11 @@ function showNodeOnMap(node, nodeClass) {
 	marker = L.marker([nodeLat, nodeLng]).addTo(map);
 }
 
-function handlePickupMouseClick(node) {
-	handleMouseOut(node);
-	hide(".Pickup");
-	hide(".Dropoff");
-	hide(".Path");
+function doNothing(){}
 
-	/* show all paths from this node */
-	let paths = getPathsFromNode(node);
+function drawPaths(paths, nodeID) {
 
-	drawPaths(paths, node["pnode"]);
-
-	// Show node on map (in information section)
-	showNodeOnMap(node, "Pickup");
-}
-
-function drawPaths(paths, node) {
-	//console.log(paths[0]);
-	//var t = 0;
-
-
-
-	var p = canvas.selectAll(".Path")
+	canvas.selectAll(".Path")
 		.data(paths)
 		.enter()
 		.append("g")
@@ -189,37 +182,58 @@ function drawPaths(paths, node) {
 			.append("circle")
 				.attr("fill", function(d){
 					// Selected node in black
-					if (d == node){
+					if (d == nodeID){
 						return "black"
-					}
-
-					if (pickupNodesSet.has(d)){
+					} else if (pickupNodesSet.has(d)){
 						return "red";
-					}
-					if (dropOffNodesSet.has(d)){
+					} else if (dropOffNodesSet.has(d)){
 						return "blue";
+					} else {
+						return "green";
 					}
-					return "green";
 				})
 				.attr("class", function(d){
-					if (d == node){
+					if (d == nodeID){
 						return "Selected"
-					}
-					if (pickupNodesSet.has(d)){
+					} else if (pickupNodesSet.has(d)){
 						return "Pickup";
-					}
-					if (dropOffNodesSet.has(d)){
+					} else if (dropOffNodesSet.has(d)){
 						return "Dropoff";
+					} else {
+						return "NodepathOnly";
 					}
-					return "NodepathOnly";
 				})
 				.attr("r", function(d){
-					if (d == node){
+					if (d == nodeID){
 						return pathNodeRadius + 1
+					} else if (pickupNodesSet.has(d) || dropOffNodesSet.has(d)){
+						return normalNodeRadius;
+					} else {
+						return pathNodeRadius;
 					}
-
-					return pathNodeRadius
-
+				})
+				.on("mouseover", function(d){
+					if (pickupNodesSet.has(d) || dropOffNodesSet.has(d)){
+						return handleMouseOverByNodeID(d);
+					} else {
+						return doNothing();
+					}
+				})
+				.on("mouseout", function(d){
+					if (pickupNodesSet.has(d) || dropOffNodesSet.has(d)){
+						return handleMouseOut();
+					} else {
+						return doNothing();
+					}
+				})
+				.on("click", function(d){
+					if (pickupNodesSet.has(d)){
+						return handlePickupMouseClick(d);
+					} else if (dropOffNodesSet.has(d)){
+						return handleDropoffMouseClick(d);
+					} else {
+						return doNothing();
+					}
 				})
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
@@ -233,9 +247,9 @@ function drawPaths(paths, node) {
 
 
 	d3.selection.prototype.moveUp = function() {
-			return this.each(function() {
-					this.parentNode.appendChild(this);
-			});
+		return this.each(function() {
+			this.parentNode.appendChild(this);
+		});
 	};
 
 	canvas.selectAll(".Dropoff").moveUp();
@@ -244,19 +258,77 @@ function drawPaths(paths, node) {
 }
 
 function handleDropoffMouseClick(node) {
-	handleMouseOut(node);
+	handleMouseOut();
 	hide(".Pickup");
 	hide(".Dropoff");
 
-	/* show all paths from this node */
-	let paths = getPathsToNode(node);
-	console.log(node);
+	var nodeID;
 
-	drawPaths(paths, node["dnode"]);
+	if(node["dnode"] != null) {
+		nodeID = node["dnode"];
+	} else {
+		nodeID = node;
+	}
+
+	/* show all paths from this node */
+	let paths = getPathsToNode(nodeID);
+
+	drawPaths(paths, nodeID);
 
 	// Show node on map (in information section)
-	showNodeOnMap(node, "Dropoff");
+	showNodeOnMap(nodeID, "Dropoff");
 }
+
+/*function handleDropoffMouseClickByNodeID(nodeID) {
+	handleMouseOut();
+	hide(".Pickup");
+	hide(".Dropoff");
+
+	// show all paths from this node
+	let paths = getPathsToNode(nodeID);
+	drawPaths(paths, nodeID);
+
+	// Show node on map (in information section)
+	showNodeOnMap(nodeID, "Dropoff");
+}*/
+
+function handlePickupMouseClick(node) {
+	handleMouseOut();
+	hide(".Pickup");
+	hide(".Dropoff");
+	hide(".Path");
+
+	if(node["pnode"] != null) {
+		nodeID = node["pnode"];
+	} else {
+		nodeID = node;
+	}
+
+	console.log(nodeID);
+
+	/* show all paths from this node */
+	let paths = getPathsFromNode(nodeID);
+
+	drawPaths(paths, nodeID);
+
+	// Show node on map (in information section)
+	showNodeOnMap(nodeID, "Pickup");
+}
+
+/*function handlePickupMouseClickByNodeID(nodeID) {
+	handleMouseOut();
+	hide(".Pickup");
+	hide(".Dropoff");
+	hide(".Path");
+
+	// show all paths from this node 
+	let paths = getPathsFromNode(nodeID);
+
+	drawPaths(paths, nodeID);
+
+	// Show node on map (in information section)
+	showNodeOnMap(nodeID, "Pickup");
+}*/
 
 function showAllDropoffNodes() {
 	canvas.selectAll(".Dropoff")
