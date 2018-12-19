@@ -150,34 +150,6 @@ function hideAllPickupNodes() {
 	canvas.selectAll(".Pickup").data(pickupNodes).exit().remove();
 }
 
-function showNodeOnMap(nodeID, nodeClass) {
-	var nodeLat;
-	var nodeLng;
-
-	switch(nodeClass) {
-		case "Pickup":
-			nodeLat = Number(osmToLatLng[nodeID][0]);
-			nodeLng = Number(osmToLatLng[nodeID][1]);
-			break;
-		case "Dropoff":
-			nodeLat = Number(osmToLatLng[nodeID][0]);
-			nodeLng = Number(osmToLatLng[nodeID][1]);
-			break;
-		default:
-			break;
-	}
-
-	if(marker != null) {
-		infoMap.removeLayer(marker);
-	}
-
-	// center map on node
-	infoMap.setView([nodeLat, nodeLng], 15);
-
-	// add marker for node on map
-	marker = L.marker([nodeLat, nodeLng]).addTo(infoMap);
-}
-
 function showAllDropoffNodes() {
 	canvas.selectAll(".Dropoff")
 		.data(dropoffNodes)
@@ -352,6 +324,8 @@ function getPathsToNode(nodeID) {
 	return toReturn;
 }
 
+// ----------------------------------------- INFO MAP -----------------------------------------
+
 function initializeMap() {
 	// set map
 	infoMap = L.map('infoMap', {attributionControl: false})
@@ -374,21 +348,63 @@ function initializeMap() {
 	document.getElementById('infoMap').style.cursor='default';
 }
 
+function showNodeOnMap(nodeID, nodeClass) {
+	var nodeLat;
+	var nodeLng;
+
+	switch(nodeClass) {
+		case "Pickup":
+			nodeLat = Number(osmToLatLng[nodeID][0]);
+			nodeLng = Number(osmToLatLng[nodeID][1]);
+			break;
+		case "Dropoff":
+			nodeLat = Number(osmToLatLng[nodeID][0]);
+			nodeLng = Number(osmToLatLng[nodeID][1]);
+			break;
+		default:
+			break;
+	}
+
+	if(marker != null) {
+		infoMap.removeLayer(marker);
+	}
+
+	// center map on node
+	infoMap.setView([nodeLat, nodeLng], 15);
+
+	// add marker for node on map
+	marker = L.marker([nodeLat, nodeLng]).addTo(infoMap);
+}
+
+function updateInfoMap(lngL, lngR, latU, latD) {
+	
+}
+
 // ----------------------------------------- BRUSHING -----------------------------------------
 
 function brushended() {
-  var s = d3.event.selection;
-  if (!s) {
-    if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-    scaleX.domain(x0);
-    scaleY.domain(y0);
-  } else {
-		console.log(s[0][0])
-    scaleX.domain([s[0][0], s[1][0]].map(scaleX.invert, scaleX));
-    scaleY.domain([s[1][1], s[0][1]].map(scaleY.invert,scaleY));
-    canvas.select(".brush").call(brush.move, null);
-  }
-  zoom();
+	var s = d3.event.selection;
+	if (!s) {
+		if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+		scaleX.domain(x0);
+    	scaleY.domain(y0);
+  	} else {
+		//console.log(s[0][0])
+	    scaleX.domain([s[0][0], s[1][0]].map(scaleX.invert, scaleX));
+	    scaleY.domain([s[1][1], s[0][1]].map(scaleY.invert, scaleY));
+	    canvas.select(".brush").call(brush.move, null);
+  	}
+	zoom();
+
+	console.log(s);
+
+	[lngL, lngR] = [s[0][0], s[1][0]].map(scaleX.invert, scaleX);
+	[latU, latD] = [s[1][1], s[0][1]].map(scaleY.invert, scaleY);
+
+	updateInfoMap(lngL, lngR, latU, latD);
+
+	//console.log(lngL + "," + lngR);
+	//console.log(latU + "," + latD);
 }
 
 
@@ -397,11 +413,11 @@ function idled() {
 }
 
 function zoom() {
-	console.log("Hello")
+	//console.log("Hello")
   var t = canvas.transition().duration(750);
   canvas.selectAll("circle").transition(t)
 			.attr("transform", function(d){
-				console.log(d)
+				//console.log(d)
 				if(!d){
 					return
 				}
@@ -440,16 +456,9 @@ whenDocumentLoaded(() => {
 	    .attr("class", "infoBox")
 	    .style("opacity", 0);
 
-    /*d3.select("#backgroundMap").append('svg')
-        .on('click',function(){
-            svg.remove();
-        });*/
-
     // initalize map centered on lausanne region
 	initializeMap();
 	infoMap.setView([46.5201349,6.6308389], 12);
-	//backgroundMap.setView([46.5201349,6.6308389], 13);
-
 
 	// Load the database
 	const database_promise = d3.csv("data/cleaned.csv").then( (data) => {
@@ -532,8 +541,6 @@ whenDocumentLoaded(() => {
 	    // legend for pickup
 		let legend_spacing = 7;
 		let legendRadius = 5;
-
-
 
 		canvas.append("circle")
 			.attr("id", "legend_pickup")
