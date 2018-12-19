@@ -12,16 +12,8 @@
 	constructor(svg_element_id) {
 		this.svg = d3.select('#' + svg_element_id);
 
-		const all_data = d3.csv("data/cleaned.csv").then((data) => {
-			let d = {};
-			data.forEach((row) => {
-				d[row.i] =  parseFloat(row.t);
-			});
-			return d;
-		});
-
 		// Load the pickup nodes (loaded once even if they appear multiple times)
-		const pickup_and_dropoff_nodes_promise = d3.csv("data/cleaned.csv").then((data) => {
+		/*const pickup_and_dropoff_nodes_promise = d3.csv("data/cleaned.csv").then((data) => {
 			let pickupNodes = [];
 			var newPickupNode;
 
@@ -54,10 +46,10 @@
 		// Load the dictionary of OSM node ID to number of occurences of this node
 		const node_id_to_occurences_promise = $.getJSON("data/nodesToOccurences.json", function(json){}).then((data) => {
 			return data;
-		});
+		});*/
 
 
-		// Make the pickup Icon
+		/* Make the pickup Icon
 		var pickupIcon = L.icon({
 		    iconUrl: 'images/redIcon.png',
 		    iconSize: [10, 10],
@@ -109,13 +101,14 @@
 				if(idToLngLat.hasOwnProperty(point)) {
 					L.marker([idToLngLat[point][0], idToLngLat[point][1]]).addTo(map);
 				}
-			});/
+			});
 		});
 	}
 }*/
 
 // global variable
-const radius = 5;
+const normalNodeRadius = 3;
+const pathNodeRadius = 1.5;
 const width = 1000;
 const height = 700;
 const margin = 5;
@@ -195,10 +188,36 @@ function doSomeThing(d){
 	//console.log(d);
 }
 
+function showNodeOnMap(node) {
+
+	let nodeLat = Number(osmToLatLng[node["pnode"]][0]);
+	let nodeLng = Number(osmToLatLng[node["pnode"]][1]);
+
+	// set map
+	var map = L.map('map', {attributionControl: false}).setView([nodeLat, nodeLng], 15); // center on Lausanne region
+
+	// load a tile layer
+	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
+	}).addTo(map);
+
+	// add marker for node on map
+	L.marker([nodeLat, nodeLng]).addTo(map);
+
+	// disable all map features
+	map.dragging.disable();
+	map.touchZoom.disable();
+	map.doubleClickZoom.disable();
+	map.scrollWheelZoom.disable();
+	map.boxZoom.disable();
+	map.keyboard.disable();
+	map.removeControl(map.zoomControl);
+
+	// set cursor to default
+	document.getElementById('map').style.cursor='default';
+}
+
 function handlePickupMouseClick(node) {
-
-
-
 	handleMouseOut(node);
 	hide(".Pickup");
 	hide(".Dropoff");
@@ -254,11 +273,12 @@ function handlePickupMouseClick(node) {
 
 				})
 				.style("opacity", 0)
-				.attr("r", radius)
+				.attr("r", pathNodeRadius)
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
 				});
 
+	// Appearence of pickup nodes
 	p.transition()
 	.duration(1000)
 	.delay(function(d,i){ return 50*i * (1 / 4); })
@@ -289,7 +309,7 @@ function showAllDropoffNodes() {
 				//Dropoff in blue
 					.append("circle")
 					.attr("class", "Dropoff")
-					.attr("r" , radius)
+					.attr("r" , normalNodeRadius)
 					.attr("transform", function(d) {
 						return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
 					})
@@ -297,6 +317,8 @@ function showAllDropoffNodes() {
 					.style("opacity", 0)
 					.on("mouseover", handleDropoffMouseOver)
 					.on("mouseout", handleMouseOut);
+
+	// Appearence of dropoff nodes
 	p.transition()
 	.duration(1000)
 	.delay(function(d,i){ return 10*i * (1 / 4); })
@@ -311,7 +333,7 @@ function showAllPickupNodes() {
 					.append("circle")
 					//.transition().duration(1000).style("opacity", .9)
 					.attr("class", "Pickup")
-					.attr("r" , radius)
+					.attr("r" , normalNodeRadius)
 					.attr("transform", function(d) {
 						return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
 					})
@@ -321,7 +343,7 @@ function showAllPickupNodes() {
 					.on("mouseout", handleMouseOut)
 					.on("click", handlePickupMouseClick);
 
-
+	// Appearence of pickup nodes
 	p.transition()
 	.duration(1000)
 	.delay(function(d,i){ return 100*i * (1 / 4); })
@@ -348,21 +370,19 @@ function handleLegendPickupAndDropoffClick(){
 
 whenDocumentLoaded(() => {
 
-	/* UNCOMMENT THIS TO SEE THE MAP
-	// initialize the map
+	// UNCOMMENT THIS TO SEE THE MAP
+	/* initialize the map
 	var map = L.map('map').setView([46.5201349,6.6308389], 12); // center on Lausanne region
 
 	// load a tile layer
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
 		maxZoom: 17,
-		minZoom: 12
+		minZoom: 13
 	}).addTo(map);
 
 
-	plot_object = new MapPlot('map-plot');
-
-	*/
+	plot_object = new MapPlot('map-plot');*/
 
 
 	// scale
@@ -461,18 +481,19 @@ whenDocumentLoaded(() => {
 
 	    // legend for pickup
 		let legend_spacing = 7;
+		let legendRadius = 5;
 
 		canvas.append("circle")
-				.attr("id", "legend_pickup")
-				.attr("cx", margin)
-				.attr("cy", margin)
-				.attr("r", radius)
-				.attr("fill", "red")
-				.on("click", handleLegendPickupClick);
+			.attr("id", "legend_pickup")
+			.attr("cx", margin)
+			.attr("cy", margin)
+			.attr("r", legendRadius)
+			.attr("fill", "red")
+			.on("click", handleLegendPickupClick);
 
 		canvas.append("text")
-			.attr("x", margin + radius + 3)
-			.attr("y", margin + radius)
+			.attr("x", margin + legendRadius + 3)
+			.attr("y", margin + legendRadius)
 			.text("pickup")
 			.on("click", handleLegendPickupClick);
 
@@ -480,15 +501,15 @@ whenDocumentLoaded(() => {
 		canvas.append("circle")
 			.attr("id", "legend_dropoff")
 			.attr("cx", margin)
-			.attr("cy", margin + 2* radius + legend_spacing)
-			.attr("r", radius)
+			.attr("cy", margin + 2* legendRadius + legend_spacing)
+			.attr("r", legendRadius)
 			.attr("fill", "blue")
 			.on("click", handleLegendDropoffClick);
 
 
 		canvas.append("text")
-			.attr("x", margin + radius + 3)
-			.attr("y", margin + 3* radius + legend_spacing )
+			.attr("x", margin + legendRadius + 3)
+			.attr("y", margin + 3* legendRadius + legend_spacing )
 			.text("dropoff")
 			.on("click", handleLegendDropoffClick);
 
@@ -498,35 +519,37 @@ whenDocumentLoaded(() => {
 		canvas.append("circle")
 			.attr("id", "legend_pickup_dropoff")
 			.attr("cx", margin)
-			.attr("cy", margin + 4* radius + 2* legend_spacing)
-			.attr("r", radius-1)
+			.attr("cy", margin + 4* legendRadius + 2* legend_spacing)
+			.attr("r", legendRadius-1)
 			.style("stroke-width", 2)    // set the stroke width
 		    .style("stroke", "red")      // set the line colour
 		    .style("fill", "blue")
-				.on("click", handleLegendPickupAndDropoffClick);
+			.on("click", handleLegendPickupAndDropoffClick);
 
 
 		canvas.append("text")
-			.attr("x", margin + radius + 3)
-			.attr("y", margin + 5* radius + 2*legend_spacing )
+			.attr("x", margin + legendRadius + 3)
+			.attr("y", margin + 5* legendRadius + 2*legend_spacing )
 			.text("pickup and dropoff")
 			.on("click", handleLegendPickupAndDropoffClick);
 
-			// legend for path
+		// legend for path
 		canvas.append("circle")
-				.attr("id", "legend_path")
-				.attr("cx", margin)
-				.attr("cy", margin + 6* radius + 3*legend_spacing)
-				.attr("r", radius)
-				.attr("fill", "green");
+			.attr("id", "legend_path")
+			.attr("cx", margin)
+			.attr("cy", margin + 6* legendRadius + 3*legend_spacing)
+			.attr("r", legendRadius)
+			.attr("fill", "green");
 
 
-			canvas.append("text")
-				.attr("x", margin + radius + 3)
-				.attr("y", margin + 7* radius + 3*legend_spacing )
-				.text("path node")
-				//.on("click", handleLegendDropoffClick);
+		canvas.append("text")
+			.attr("x", margin + legendRadius + 3)
+			.attr("y", margin + 7* legendRadius + 3*legend_spacing )
+			.text("path node")
+			//.on("click", handleLegendPathClick);
 		});
+
+
 });
 
 
