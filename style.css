@@ -8,7 +8,7 @@ h4{
 	font-style: italic;
 }
 
-#map{
+#infoMap{
 	height: 25%;
     width: 25%;
     border-style: solid;
@@ -22,7 +22,6 @@ body  {
 .Pickup:hover {
 	cursor: pointer;
 }
-
 
 div.infoBox {
     position: absolute;

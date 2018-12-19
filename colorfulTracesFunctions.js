@@ -37,39 +37,7 @@ let brush = d3.brush().on("end", brushended),
 		idleTimeout,
 		idleDelay = 350;
 
-function whenDocumentLoaded(action) {
-	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", action);
-	} else {
-		// `DOMContentLoaded` already fired
-		action();
-	}
-}
-
-function getPathsFromNode(nodeID) {
-
-	let toReturn = [];
-
-	database.forEach((row) => {
-		if(nodeID == row.pnode) {
-			toReturn.push(row);
-		}
-	});
-
-	return toReturn;
-}
-
-function getPathsToNode(nodeID) {
-	let toReturn = [];
-
-	database.forEach((row) => {
-		if(nodeID == row.dnode) {
-			toReturn.push(row);
-		}
-	});
-
-	return toReturn;
-}
+// ----------------------------------------- MOUSE HANDLERS -----------------------------------------
 
 function handleDropoffMouseOver(node) {
 
@@ -110,38 +78,76 @@ function handleMouseOut() {
 	.style("opacity", 0);
 }
 
+function handleDropoffMouseClick(node) {
+	handleMouseOut();
+	hide(".Pickup");
+	hide(".Dropoff");
+	hide(".Path");
+
+	var nodeID;
+
+	if(node["dnode"] != null) {
+		nodeID = node["dnode"];
+	} else {
+		nodeID = node;
+	}
+
+	/* show all paths from this node */
+	let paths = getPathsToNode(nodeID);
+
+	drawPaths(paths, nodeID);
+
+	// Show node on map (in information section)
+	showNodeOnMap(nodeID, "Dropoff");
+}
+
+function handlePickupMouseClick(node) {
+	handleMouseOut();
+	hide(".Pickup");
+	hide(".Dropoff");
+	hide(".Path");
+
+	if(node["pnode"] != null) {
+		nodeID = node["pnode"];
+	} else {
+		nodeID = node;
+	}
+
+	// show all paths from this node
+	let paths = getPathsFromNode(nodeID);
+
+	drawPaths(paths, nodeID);
+
+	// Show node on map (in information section)
+	showNodeOnMap(nodeID, "Pickup");
+}
+
+function handleLegendDropoffClick(){
+	hide(".Pickup");
+	hide(".Path");
+	showAllDropoffNodes();
+}
+
+function handleLegendPickupClick(){
+	hide(".Dropoff");
+	hide(".Path");
+	showAllPickupNodes();
+}
+
+function handleLegendPickupAndDropoffClick(){
+	hide(".Path");
+	showAllDropoffNodes();
+	showAllPickupNodes();
+}
+
+// ----------------------------------------- SHOWING POINTS -----------------------------------------
+
 function hide(nodeClass) {
 	canvas.selectAll(nodeClass).remove();
 }
 
 function hideAllPickupNodes() {
 	canvas.selectAll(".Pickup").data(pickupNodes).exit().remove();
-}
-
-function doSomeThing(d){
-	//console.log(d);
-}
-
-function initializeMap() {
-	// set map
-	infoMap = L.map('infoMap', {attributionControl: false})
-
-	// load a tile layer
-	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
-	}).addTo(infoMap);
-
-	// disable all map features
-	infoMap.dragging.disable();
-	infoMap.touchZoom.disable();
-	infoMap.doubleClickZoom.disable();
-	infoMap.scrollWheelZoom.disable();
-	infoMap.boxZoom.disable();
-	infoMap.keyboard.disable();
-	infoMap.removeControl(infoMap.zoomControl);
-
-	// set cursor to default
-	document.getElementById('infoMap').style.cursor='default';
 }
 
 function showNodeOnMap(nodeID, nodeClass) {
@@ -172,53 +178,50 @@ function showNodeOnMap(nodeID, nodeClass) {
 	marker = L.marker([nodeLat, nodeLng]).addTo(infoMap);
 }
 
-function doNothing(){}
-
-
-function brushended() {
-  var s = d3.event.selection;
-  if (!s) {
-    if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
-    scaleX.domain(x0);
-    scaleY.domain(y0);
-  } else {
-		console.log(s[0][0])
-    scaleX.domain([s[0][0], s[1][0]].map(scaleX.invert, scaleX));
-    scaleY.domain([s[1][1], s[0][1]].map(scaleY.invert,scaleY));
-    canvas.select(".brush").call(brush.move, null);
-  }
-  zoom();
+function showAllDropoffNodes() {
+	canvas.selectAll(".Dropoff")
+		.data(dropoffNodes)
+			.enter()
+			//Dropoff in blue
+				.append("circle")
+				.attr("class", "Dropoff")
+				.attr("r" , normalNodeRadius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
+				})
+				.attr("fill", "blue")
+				.style("opacity", 0)
+				.on("mouseover", handleDropoffMouseOver)
+				.on("mouseout", handleMouseOut)
+				.on("click", handleDropoffMouseClick)
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){ return 10*i * (1 / 4); })
+				.style("opacity", 1);
 }
 
+function showAllPickupNodes() {
+	canvas.selectAll(".Pickup")
+		.data(pickupNodes)
+			.enter()
+			//Pickup in red
+				.append("circle")
+				.attr("class", "Pickup")
+				.attr("r" , normalNodeRadius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
+				})
+				.attr("fill", "red")
+				.style("opacity", 0)
+				.on("mouseover", handlePickupMouseOver)
+				.on("mouseout", handleMouseOut)
+				.on("click", handlePickupMouseClick)
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){ return 100*i * (1 / 4); })
+				.style("opacity", 1);
 
-function idled() {
-  idleTimeout = null;
 }
-
-function zoom() {
-	console.log("Hello")
-  var t = canvas.transition().duration(750);
-  canvas.selectAll("circle").transition(t)
-			.attr("transform", function(d){
-				console.log(d)
-				if(!d){
-					return
-				}
-				if (d.hasOwnProperty("dnode")){
-					nodeId = d["dnode"]
-				} else if (d.hasOwnProperty("pnode")) {
-					nodeId = d["pnode"]
-				} else {
-					nodeId = d
-				}
-
-				return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
-
-
-			})
-}
-
-
 
 function drawPaths(paths, nodeID) {
 
@@ -227,7 +230,7 @@ function drawPaths(paths, nodeID) {
 		.enter()
 		.append("g")
 			.attr("class", "Path")
-			.on("mouseover", doSomeThing)
+			.on("mouseover", doNothing)
 			.selectAll(".Nodepath")
 			.data(function(d){
 				return JSON.parse(d["road"]);
@@ -311,112 +314,112 @@ function drawPaths(paths, nodeID) {
 	canvas.selectAll(".Selected").moveUp();
 }
 
-function handleDropoffMouseClick(node) {
-	handleMouseOut();
-	hide(".Pickup");
-	hide(".Dropoff");
-	hide(".Path");
+// ----------------------------------------- HELPFUL FUNCTIONS -----------------------------------------
 
-	var nodeID;
+function doNothing(){}
 
-	if(node["dnode"] != null) {
-		nodeID = node["dnode"];
+function whenDocumentLoaded(action) {
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", action);
 	} else {
-		nodeID = node;
+		// `DOMContentLoaded` already fired
+		action();
 	}
-
-	/* show all paths from this node */
-	let paths = getPathsToNode(nodeID);
-
-	drawPaths(paths, nodeID);
-
-	// Show node on map (in information section)
-	showNodeOnMap(nodeID, "Dropoff");
 }
 
-function handlePickupMouseClick(node) {
-	handleMouseOut();
-	hide(".Pickup");
-	hide(".Dropoff");
-	hide(".Path");
+function getPathsFromNode(nodeID) {
 
-	if(node["pnode"] != null) {
-		nodeID = node["pnode"];
-	} else {
-		nodeID = node;
-	}
+	let toReturn = [];
 
-	// show all paths from this node
-	let paths = getPathsFromNode(nodeID);
+	database.forEach((row) => {
+		if(nodeID == row.pnode) {
+			toReturn.push(row);
+		}
+	});
 
-	drawPaths(paths, nodeID);
-
-	// Show node on map (in information section)
-	showNodeOnMap(nodeID, "Pickup");
+	return toReturn;
 }
 
-function showAllDropoffNodes() {
-	canvas.selectAll(".Dropoff")
-		.data(dropoffNodes)
-			.enter()
-			//Dropoff in blue
-				.append("circle")
-				.attr("class", "Dropoff")
-				.attr("r" , normalNodeRadius)
-				.attr("transform", function(d) {
-					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
-				})
-				.attr("fill", "blue")
-				.style("opacity", 0)
-				.on("mouseover", handleDropoffMouseOver)
-				.on("mouseout", handleMouseOut)
-				.on("click", handleDropoffMouseClick)
-				.transition()
-				.duration(1000)
-				.delay(function(d,i){ return 10*i * (1 / 4); })
-				.style("opacity", 1);
+function getPathsToNode(nodeID) {
+	let toReturn = [];
+
+	database.forEach((row) => {
+		if(nodeID == row.dnode) {
+			toReturn.push(row);
+		}
+	});
+
+	return toReturn;
 }
 
-function showAllPickupNodes() {
-	canvas.selectAll(".Pickup")
-		.data(pickupNodes)
-			.enter()
-			//Pickup in red
-				.append("circle")
-				.attr("class", "Pickup")
-				.attr("r" , normalNodeRadius)
-				.attr("transform", function(d) {
-					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
-				})
-				.attr("fill", "red")
-				.style("opacity", 0)
-				.on("mouseover", handlePickupMouseOver)
-				.on("mouseout", handleMouseOut)
-				.on("click", handlePickupMouseClick)
-				.transition()
-				.duration(1000)
-				.delay(function(d,i){ return 100*i * (1 / 4); })
-				.style("opacity", 1);
+function initializeMap() {
+	// set map
+	infoMap = L.map('infoMap', {attributionControl: false})
 
+	// load a tile layer
+	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
+	}).addTo(infoMap);
+
+	// disable all map features
+	infoMap.dragging.disable();
+	infoMap.touchZoom.disable();
+	infoMap.doubleClickZoom.disable();
+	infoMap.scrollWheelZoom.disable();
+	infoMap.boxZoom.disable();
+	infoMap.keyboard.disable();
+	infoMap.removeControl(infoMap.zoomControl);
+
+	// set cursor to default
+	document.getElementById('infoMap').style.cursor='default';
 }
 
-function handleLegendDropoffClick(){
-	hide(".Pickup");
-	hide(".Path");
-	showAllDropoffNodes();
+// ----------------------------------------- BRUSHING -----------------------------------------
+
+function brushended() {
+  var s = d3.event.selection;
+  if (!s) {
+    if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+    scaleX.domain(x0);
+    scaleY.domain(y0);
+  } else {
+		console.log(s[0][0])
+    scaleX.domain([s[0][0], s[1][0]].map(scaleX.invert, scaleX));
+    scaleY.domain([s[1][1], s[0][1]].map(scaleY.invert,scaleY));
+    canvas.select(".brush").call(brush.move, null);
+  }
+  zoom();
 }
 
-function handleLegendPickupClick(){
-	hide(".Dropoff");
-	hide(".Path");
-	showAllPickupNodes();
+
+function idled() {
+  idleTimeout = null;
 }
 
-function handleLegendPickupAndDropoffClick(){
-	hide(".Path");
-	showAllDropoffNodes();
-	showAllPickupNodes();
+function zoom() {
+	console.log("Hello")
+  var t = canvas.transition().duration(750);
+  canvas.selectAll("circle").transition(t)
+			.attr("transform", function(d){
+				console.log(d)
+				if(!d){
+					return
+				}
+				if (d.hasOwnProperty("dnode")){
+					nodeId = d["dnode"]
+				} else if (d.hasOwnProperty("pnode")) {
+					nodeId = d["pnode"]
+				} else {
+					nodeId = d
+				}
+
+				return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
+
+
+			})
 }
+
+// ----------------------------------------- ON DOCUMENT LOAD -----------------------------------------
 
 whenDocumentLoaded(() => {
 
@@ -601,8 +604,4 @@ whenDocumentLoaded(() => {
 		canvas.append("g")
 			.attr("class", "brush")
 			.call(brush);
-
-
-
-
 });
