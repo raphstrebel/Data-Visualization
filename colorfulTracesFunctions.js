@@ -116,7 +116,7 @@ function hideAllPickupNodes() {
 }
 
 function doSomeThing(d){
-	//console.log(d);
+
 }
 
 function initializeMap(node) {
@@ -179,7 +179,6 @@ function brushended() {
     scaleX.domain(x0);
     scaleY.domain(y0);
   } else {
-		console.log(s[0][0])
     scaleX.domain([s[0][0], s[1][0]].map(scaleX.invert, scaleX));
     scaleY.domain([s[1][1], s[0][1]].map(scaleY.invert,scaleY));
     canvas.select(".brush").call(brush.move, null);
@@ -193,11 +192,9 @@ function idled() {
 }
 
 function zoom() {
-	console.log("Hello")
   var t = canvas.transition().duration(750);
   canvas.selectAll("circle").transition(t)
 			.attr("transform", function(d){
-				console.log(d)
 				if(!d){
 					return
 				}
