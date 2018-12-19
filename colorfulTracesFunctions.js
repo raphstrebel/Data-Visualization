@@ -336,7 +336,7 @@ function initializeMap() {
 	}).addTo(infoMap);
 
 	// disable all map features
-	infoMap.dragging.disable();
+	//infoMap.dragging.disable();
 	infoMap.touchZoom.disable();
 	infoMap.doubleClickZoom.disable();
 	infoMap.scrollWheelZoom.disable();
@@ -345,7 +345,7 @@ function initializeMap() {
 	infoMap.removeControl(infoMap.zoomControl);
 
 	// set cursor to default
-	document.getElementById('infoMap').style.cursor='default';
+	//document.getElementById('infoMap').style.cursor='default';
 }
 
 function showNodeOnMap(nodeID, nodeClass) {
@@ -377,7 +377,11 @@ function showNodeOnMap(nodeID, nodeClass) {
 }
 
 function updateInfoMap(lngL, lngR, latU, latD) {
+	let centerLng = (lngL+lngR)/2;
+	let centerLat = (latU+latD)/2;
+	let maxDiff = Math.max(lngR-lngL, latD-latU);
 	
+	infoMap.setView([centerLat, centerLng], Math.round(15-10*maxDiff));
 }
 
 // ----------------------------------------- BRUSHING -----------------------------------------
@@ -389,22 +393,16 @@ function brushended() {
 		scaleX.domain(x0);
     	scaleY.domain(y0);
   	} else {
-		//console.log(s[0][0])
 	    scaleX.domain([s[0][0], s[1][0]].map(scaleX.invert, scaleX));
 	    scaleY.domain([s[1][1], s[0][1]].map(scaleY.invert, scaleY));
 	    canvas.select(".brush").call(brush.move, null);
   	}
 	zoom();
 
-	console.log(s);
-
 	[lngL, lngR] = [s[0][0], s[1][0]].map(scaleX.invert, scaleX);
 	[latU, latD] = [s[1][1], s[0][1]].map(scaleY.invert, scaleY);
 
 	updateInfoMap(lngL, lngR, latU, latD);
-
-	//console.log(lngL + "," + lngR);
-	//console.log(latU + "," + latD);
 }
 
 
