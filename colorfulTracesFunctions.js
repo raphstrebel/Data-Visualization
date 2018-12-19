@@ -123,6 +123,9 @@ var dropoffNodes;
 var scaleX;
 var scaleY;
 
+var map;
+var marker;
+
 
 
 function whenDocumentLoaded(action) {
@@ -185,21 +188,14 @@ function doSomeThing(d){
 	//console.log(d);
 }
 
-function showNodeOnMap(node) {
-
-	let nodeLat = Number(osmToLatLng[node["pnode"]][0]);
-	let nodeLng = Number(osmToLatLng[node["pnode"]][1]);
-
+function initializeMap(node) {
 	// set map
-	var map = L.map('map', {attributionControl: false}).setView([nodeLat, nodeLng], 15); // center on Lausanne region
+	map = L.map('map', {attributionControl: false})
 
 	// load a tile layer
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
 	}).addTo(map);
-
-	// add marker for node on map
-	L.marker([nodeLat, nodeLng]).addTo(map);
 
 	// disable all map features
 	map.dragging.disable();
@@ -212,6 +208,22 @@ function showNodeOnMap(node) {
 
 	// set cursor to default
 	document.getElementById('map').style.cursor='default';
+}
+
+function showNodeOnMap(node) {
+
+	let nodeLat = Number(osmToLatLng[node["pnode"]][0]);
+	let nodeLng = Number(osmToLatLng[node["pnode"]][1]);
+
+	if(marker != null) {
+		map.removeLayer(marker);
+	}
+
+	// center map on node
+	map.setView([nodeLat, nodeLng], 15);
+
+	// add marker for node on map
+	marker = L.marker([nodeLat, nodeLng]).addTo(map);
 }
 
 function handlePickupMouseClick(node) {
@@ -333,20 +345,6 @@ function handleLegendPickupAndDropoffClick(){
 
 whenDocumentLoaded(() => {
 
-	// UNCOMMENT THIS TO SEE THE MAP
-	/* initialize the map
-	var map = L.map('map').setView([46.5201349,6.6308389], 12); // center on Lausanne region
-
-	// load a tile layer
-	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
-		maxZoom: 17,
-		minZoom: 13
-	}).addTo(map);
-
-
-	plot_object = new MapPlot('map-plot');*/
-
 
 	// scale
 	//let sacleMode = d3.scaleLinear()
@@ -354,6 +352,10 @@ whenDocumentLoaded(() => {
 
 	// projection
 	//let projection = d3.geoMercator()
+
+	// initalize map centered on lausanne region
+	initializeMap();
+	map.setView([46.5201349,6.6308389], 12);
 
 	canvas = d3.select("#network")
 		.attr("width", width + margin)
