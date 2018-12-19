@@ -41,14 +41,14 @@ function whenDocumentLoaded(action) {
 	}
 }
 
-function getPathsFromNode(nodeID, nodeClass) {
+function getPathsFromNode(nodeID) {
 
 	let toReturn = [];
 
 	database.forEach((row) => {
-		if(nodeID === row.pnode) {
+		if(nodeID == row.pnode) {
 			toReturn.push(row);
-		}
+		}		
 	});
 
 	return toReturn;
@@ -304,12 +304,12 @@ function handlePickupMouseClick(node) {
 		nodeID = node;
 	}
 
-	console.log(nodeID);
-
-	/* show all paths from this node */
+	// show all paths from this node 
 	let paths = getPathsFromNode(nodeID);
 
 	drawPaths(paths, nodeID);
+
+	console.log(paths);
 
 	// Show node on map (in information section)
 	showNodeOnMap(nodeID, "Pickup");
