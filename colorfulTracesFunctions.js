@@ -41,6 +41,19 @@ function getPathsFromNode(node) {
 	database.forEach((row) => {
 		if(node["pnode"] === row.pnode) {
 			toReturn.push(row);
+			nbPaths++;
+		}
+	});
+
+	return toReturn;
+}
+
+function getPathsToNode(node) {
+	let toReturn = [];
+
+	database.forEach((row) => {
+		if(node["dnode"] === row.dnode) {
+			toReturn.push(row);
 		}
 	});
 
@@ -107,10 +120,22 @@ function initializeMap(node) {
 	document.getElementById('map').style.cursor='default';
 }
 
-function showNodeOnMap(node) {
+function showNodeOnMap(node, nodeClass) {
+	var nodeLat;
+	var nodeLng;
 
-	let nodeLat = Number(osmToLatLng[node["pnode"]][0]);
-	let nodeLng = Number(osmToLatLng[node["pnode"]][1]);
+	switch(nodeClass) {
+		case "Pickup":
+			nodeLat = Number(osmToLatLng[node["pnode"]][0]);
+			nodeLng = Number(osmToLatLng[node["pnode"]][1]);
+			break;
+		case "Dropoff":
+			nodeLat = Number(osmToLatLng[node["dnode"]][0]);
+			nodeLng = Number(osmToLatLng[node["dnode"]][1]);
+			break;
+		default:
+			break;
+	}
 
 	if(marker != null) {
 		map.removeLayer(marker);
@@ -128,12 +153,18 @@ function handlePickupMouseClick(node) {
 	hide(".Pickup");
 	hide(".Dropoff");
 
-
 	/* show all paths from this node */
 	let paths = getPathsFromNode(node);
 
-	let toMoveUpPickup = new Array()
-	let toMoveUpDropOff = new Array()
+	drawPaths(paths);
+
+	// Show node on map (in information section)
+	showNodeOnMap(node, "Pickup");
+}
+
+function drawPaths(paths) {
+	//console.log(paths[0]);
+	//var t = 0;
 
 	var p = canvas.selectAll(".Path")
 		.data(paths)
@@ -143,52 +174,43 @@ function handlePickupMouseClick(node) {
 			.on("mouseover", doSomeThing)
 			.selectAll(".Nodepath")
 			.data(function(d){
-				//console.log(d["road"]);
-
+				//t = d["t"];
+				//console.log("before :" + t);
 				return JSON.parse(d["road"]);
-				/*
-				return {
-					road : JSON.parse(d["road"]),
-					dnode : d["dnode"]
-				};*/
-			}).enter()
+			})
+			.enter()
 			.append("circle")
 				.attr("fill", function(d){
-					//console.log(d.dnode);
 					if (pickupNodesSet.has(d)){
-
 						return "red";
 					}
 					if (dropOffNodesSet.has(d)){
 						return "blue";
 					}
-
 					return "green";
 				})
 				.attr("class", function(d){
 					if (pickupNodesSet.has(d)){
-						toMoveUpPickup.push(d)
 						return "Pickup";
 					}
 					if (dropOffNodesSet.has(d)){
-						toMoveUpDropOff.push(d)
 						return "Dropoff";
 					}
-
 					return "NodepathOnly";
 
 				})
-				.style("opacity", 0)
 				.attr("r", pathNodeRadius)
 				.attr("transform", function(d) {
+					//console.log(t);
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
-				});
+				})
+				.style("opacity", 0)
+				.transition()
+				//.duration(1000*Math.log(paths.length))
+				.delay(function(d,i){ return 50*i * (1 / 4); })
+				.style("opacity", 1);
 
-	// Appearence of pickup nodes
-	p.transition()
-	.duration(1000)
-	.delay(function(d,i){ return 50*i * (1 / 4); })
-	.style("opacity", 1);
+
 
 	d3.selection.prototype.moveUp = function() {
 			return this.each(function() {
@@ -196,12 +218,22 @@ function handlePickupMouseClick(node) {
 			});
 	};
 
-
 	canvas.selectAll(".Dropoff").moveUp();
 	canvas.selectAll(".Pickup").moveUp();
+}
+
+function handleDropoffMouseClick(node) {
+	handleMouseOut(node);
+	hide(".Pickup");
+	hide(".Dropoff");
+
+	/* show all paths from this node */
+	let paths = getPathsToNode(node);
+
+	drawPaths(paths);
 
 	// Show node on map (in information section)
-	showNodeOnMap(node);
+	showNodeOnMap(node, "Dropoff");
 }
 
 function showAllDropoffNodes() {
@@ -218,7 +250,8 @@ function showAllDropoffNodes() {
 					.attr("fill", "blue")
 					.style("opacity", 0)
 					.on("mouseover", handleDropoffMouseOver)
-					.on("mouseout", handleMouseOut);
+					.on("mouseout", handleMouseOut)
+					.on("click", handleDropoffMouseClick);
 
 	// Appearence of dropoff nodes
 	p.transition()
