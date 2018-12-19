@@ -158,6 +158,7 @@ function handlePickupMouseClick(node) {
 	handleMouseOut(node);
 	hide(".Pickup");
 	hide(".Dropoff");
+	hide(".Path");
 
 	/* show all paths from this node */
 	let paths = getPathsFromNode(node);
@@ -199,7 +200,6 @@ function drawPaths(paths) {
 						return "Dropoff";
 					}
 					return "NodepathOnly";
-
 				})
 				.attr("r", pathNodeRadius)
 				.attr("transform", function(d) {
@@ -238,51 +238,48 @@ function handleDropoffMouseClick(node) {
 }
 
 function showAllDropoffNodes() {
-	var p = canvas.selectAll(".Dropoff")
-			.data(dropoffNodes)
-				.enter()
-				//Dropoff in blue
-					.append("circle")
-					.attr("class", "Dropoff")
-					.attr("r" , normalNodeRadius)
-					.attr("transform", function(d) {
-						return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
-					})
-					.attr("fill", "blue")
-					.style("opacity", 0)
-					.on("mouseover", handleDropoffMouseOver)
-					.on("mouseout", handleMouseOut)
-					.on("click", handleDropoffMouseClick);
-
-	// Appearence of dropoff nodes
-	p.transition()
-	.duration(1000)
-	.delay(function(d,i){ return 10*i * (1 / 4); })
-	.style("opacity", 1);
+	canvas.selectAll(".Dropoff")
+		.data(dropoffNodes)
+			.enter()
+			//Dropoff in blue
+				.append("circle")
+				.attr("class", "Dropoff")
+				.attr("r" , normalNodeRadius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
+				})
+				.attr("fill", "blue")
+				.style("opacity", 0)
+				.on("mouseover", handleDropoffMouseOver)
+				.on("mouseout", handleMouseOut)
+				.on("click", handleDropoffMouseClick)
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){ return 10*i * (1 / 4); })
+				.style("opacity", 1);
 }
 
 function showAllPickupNodes() {
-	var p = canvas.selectAll(".Pickup")
-			.data(pickupNodes)
-				.enter()
-				//Pickup in red
-					.append("circle")
-					.attr("class", "Pickup")
-					.attr("r" , normalNodeRadius)
-					.attr("transform", function(d) {
-						return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
-					})
-					.attr("fill", "red")
-					.style("opacity", 0)
-					.on("mouseover", handlePickupMouseOver)
-					.on("mouseout", handleMouseOut)
-					.on("click", handlePickupMouseClick);
+	canvas.selectAll(".Pickup")
+		.data(pickupNodes)
+			.enter()
+			//Pickup in red
+				.append("circle")
+				.attr("class", "Pickup")
+				.attr("r" , normalNodeRadius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
+				})
+				.attr("fill", "red")
+				.style("opacity", 0)
+				.on("mouseover", handlePickupMouseOver)
+				.on("mouseout", handleMouseOut)
+				.on("click", handlePickupMouseClick)
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){ return 100*i * (1 / 4); })
+				.style("opacity", 1);
 
-	// Appearence of pickup nodes
-	p.transition()
-	.duration(1000)
-	.delay(function(d,i){ return 100*i * (1 / 4); })
-	.style("opacity", 1);
 }
 
 function handleLegendDropoffClick(){
