@@ -11,6 +11,7 @@ const pathNodeRadius = 2;
 const width = 1000;
 const height = 700;
 const margin = 5;
+const maxOccurence = 1103;
 var svg;
 var div;
 var canvas;
@@ -168,7 +169,7 @@ function showAllDropoffNodes() {
 				.on("click", handleDropoffMouseClick)
 				.transition()
 				.duration(1000)
-				.delay(function(d,i){ return 10*i * (1 / 4); })
+				.delay(function(d,i){ return 2*i; })
 				.style("opacity", 1);
 }
 
@@ -190,9 +191,8 @@ function showAllPickupNodes() {
 				.on("click", handlePickupMouseClick)
 				.transition()
 				.duration(1000)
-				.delay(function(d,i){ return 100*i * (1 / 4); })
+				.delay(function(d,i){ return 25*i; })
 				.style("opacity", 1);
-
 }
 
 function drawPaths(paths, nodeID) {
@@ -272,7 +272,7 @@ function drawPaths(paths, nodeID) {
 				.style("opacity", 0)
 				.transition()
 				//.duration(1000*Math.log(paths.length))
-				.delay(function(d,i){ return 50*i * (1 / 4); })
+				.delay(function(d,i){ return 12*i; })
 				.style("opacity", 1);
 
 	d3.selection.prototype.moveUp = function() {
@@ -284,6 +284,38 @@ function drawPaths(paths, nodeID) {
 	canvas.selectAll(".Dropoff").moveUp();
 	canvas.selectAll(".Pickup").moveUp();
 	canvas.selectAll(".Selected").moveUp();
+}
+
+function showPickupAndDropoffNodesByOccurrence() {
+
+	let allNodes = Object.keys(osmToOccurences);
+
+	allPickupAndDropoffNodes = dropoffNodes.concat(pickupNodes);
+
+	var linearScale = d3.scaleLinear()
+		.domain([0, 100])
+		.interpolate(d3.interpolateHcl) 
+		//.range(['blue','red']);
+   		.range(["#112231","#3C769D"])
+		//.range(['black', 'violet', 'violet', 'violet', 'blue', 'green', 'green', 'red', 'white']);
+
+	canvas.selectAll(".Node")
+		.data(allNodes)
+			.enter()
+				.append("circle")
+				.attr("class", "Pickup")
+				.attr("r" , pathNodeRadius)
+				.attr("transform", function(d) {
+					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
+				})
+				.attr("fill", function(d,i){ 
+					return linearScale(osmToOccurences[d]);
+				})
+				.style("opacity", 0)
+				.transition()
+				.duration(1000)
+				.delay(function(d,i){ return  2*i; })
+				.style("opacity", 1);
 }
 
 // ----------------------------------------- HELPFUL FUNCTIONS -----------------------------------------
@@ -534,8 +566,10 @@ whenDocumentLoaded(() => {
 			.range([height, margin]);
 
 		// show pickup and dropoffs
-		showAllDropoffNodes();
-		showAllPickupNodes();
+		//showAllDropoffNodes();
+		//showAllPickupNodes();
+
+		showPickupAndDropoffNodesByOccurrence();
 
 	    // legend for pickup
 		let legend_spacing = 7;
