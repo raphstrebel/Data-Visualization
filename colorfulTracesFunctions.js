@@ -29,7 +29,7 @@ var scaleX;
 var scaleY;
 
 // map variables
-var map;
+var infoMap;
 var marker;
 
 function whenDocumentLoaded(action) {
@@ -66,30 +66,33 @@ function getPathsToNode(nodeID) {
 	return toReturn;
 }
 
-// make small box with info on node
-function handleDropoffMouseOver(d) {
+function handleDropoffMouseOver(node) {
+
+	let nodeID;
+
+	if(node["dnode"] != null) {
+		nodeID = node["dnode"];
+	} else {
+		nodeID = node;
+	}
 
 	div.transition().style("opacity", .9);
-
-	div.html(" occurences : " + osmToOccurences[d["dnode"]] + "<br>" + " dropoffs : " + dropoffToNbDropoffs[d["dnode"]])
+	div.html(" occurences : " + osmToOccurences[nodeID] + "<br>" + " dropoffs : " + dropoffToNbDropoffs[nodeID])
 		.style("left", (d3.event.pageX) + "px")
 		.style("top", (d3.event.pageY - 28) + "px");
 }
 
+function handlePickupMouseOver(node) {
 
-function handlePickupMouseOver(d) {
+	let nodeID;
 
-	div.transition().style("opacity", .9);
-
-	div.html(" occurences : " + osmToOccurences[d["pnode"]] + "<br>" + " pickups : " + pickupToNbPickups[d["pnode"]])
-		.style("left", (d3.event.pageX) + "px")
-		.style("top", (d3.event.pageY - 28) + "px");
-}
-
-function handleMouseOverByNodeID(nodeID) {
+	if(node["pnode"] != null) {
+		nodeID = node["pnode"];
+	} else {
+		nodeID = node;
+	}
 
 	div.transition().style("opacity", .9);
-
 	div.html(" occurences : " + osmToOccurences[nodeID] + "<br>" + " pickups : " + pickupToNbPickups[nodeID])
 		.style("left", (d3.event.pageX) + "px")
 		.style("top", (d3.event.pageY - 28) + "px");
@@ -114,26 +117,26 @@ function doSomeThing(d){
 	//console.log(d);
 }
 
-function initializeMap(node) {
+function initializeMap() {
 	// set map
-	map = L.map('map', {attributionControl: false})
+	infoMap = L.map('infoMap', {attributionControl: false})
 
 	// load a tile layer
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
-	}).addTo(map);
+	}).addTo(infoMap);
 
 	// disable all map features
-	map.dragging.disable();
-	map.touchZoom.disable();
-	map.doubleClickZoom.disable();
-	map.scrollWheelZoom.disable();
-	map.boxZoom.disable();
-	map.keyboard.disable();
-	map.removeControl(map.zoomControl);
+	infoMap.dragging.disable();
+	infoMap.touchZoom.disable();
+	infoMap.doubleClickZoom.disable();
+	infoMap.scrollWheelZoom.disable();
+	infoMap.boxZoom.disable();
+	infoMap.keyboard.disable();
+	infoMap.removeControl(infoMap.zoomControl);
 
 	// set cursor to default
-	document.getElementById('map').style.cursor='default';
+	document.getElementById('infoMap').style.cursor='default';
 }
 
 function showNodeOnMap(nodeID, nodeClass) {
@@ -154,14 +157,14 @@ function showNodeOnMap(nodeID, nodeClass) {
 	}
 
 	if(marker != null) {
-		map.removeLayer(marker);
+		infoMap.removeLayer(marker);
 	}
 
 	// center map on node
-	map.setView([nodeLat, nodeLng], 15);
+	infoMap.setView([nodeLat, nodeLng], 15);
 
 	// add marker for node on map
-	marker = L.marker([nodeLat, nodeLng]).addTo(map);
+	marker = L.marker([nodeLat, nodeLng]).addTo(infoMap);
 }
 
 function doNothing(){}
@@ -213,8 +216,10 @@ function drawPaths(paths, nodeID) {
 					}
 				})
 				.on("mouseover", function(d){
-					if (pickupNodesSet.has(d) || dropOffNodesSet.has(d)){
-						return handleMouseOverByNodeID(d);
+					if (pickupNodesSet.has(d)) {
+						return handlePickupMouseOver(d);
+					} else if(dropOffNodesSet.has(d)) {
+						return handleDropoffMouseOver(d);
 					} else {
 						return doNothing();
 					}
@@ -346,24 +351,23 @@ function showAllPickupNodes() {
 
 function handleLegendDropoffClick(){
 	hide(".Pickup");
+	hide(".Path");
 	showAllDropoffNodes();
 }
 
 function handleLegendPickupClick(){
 	hide(".Dropoff");
+	hide(".Path");
 	showAllPickupNodes();
 }
 
 function handleLegendPickupAndDropoffClick(){
+	hide(".Path");
 	showAllDropoffNodes();
 	showAllPickupNodes();
 }
 
 whenDocumentLoaded(() => {
-
-	// initalize map centered on lausanne region
-	initializeMap();
-	map.setView([46.5201349,6.6308389], 12);
 
 	canvas = d3.select("#network")
 		.attr("width", width + margin)
@@ -381,6 +385,16 @@ whenDocumentLoaded(() => {
 	div = d3.select("body").append("div")
 	    .attr("class", "infoBox")
 	    .style("opacity", 0);
+
+    /*d3.select("#backgroundMap").append('svg')
+        .on('click',function(){
+            svg.remove();
+        });*/
+
+    // initalize map centered on lausanne region
+	initializeMap();
+	infoMap.setView([46.5201349,6.6308389], 12);
+	//backgroundMap.setView([46.5201349,6.6308389], 13);
 
 
 	// Load the database
@@ -524,6 +538,8 @@ whenDocumentLoaded(() => {
 			.text("path node")
 			//.on("click", handleLegendPathClick);
 		});
+
+
 
 
 });
