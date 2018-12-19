@@ -32,6 +32,11 @@ var scaleY;
 var infoMap;
 var marker;
 
+// Brushing
+let brush = d3.brush().on("end", brushended),
+		idleTimeout,
+		idleDelay = 350;
+
 function whenDocumentLoaded(action) {
 	if (document.readyState === "loading") {
 		document.addEventListener("DOMContentLoaded", action);
@@ -48,7 +53,7 @@ function getPathsFromNode(nodeID) {
 	database.forEach((row) => {
 		if(nodeID == row.pnode) {
 			toReturn.push(row);
-		}		
+		}
 	});
 
 	return toReturn;
@@ -168,6 +173,52 @@ function showNodeOnMap(nodeID, nodeClass) {
 }
 
 function doNothing(){}
+
+
+function brushended() {
+  var s = d3.event.selection;
+  if (!s) {
+    if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
+    scaleX.domain(x0);
+    scaleY.domain(y0);
+  } else {
+		console.log(s[0][0])
+    scaleX.domain([s[0][0], s[1][0]].map(scaleX.invert, scaleX));
+    scaleY.domain([s[1][1], s[0][1]].map(scaleY.invert,scaleY));
+    canvas.select(".brush").call(brush.move, null);
+  }
+  zoom();
+}
+
+
+function idled() {
+  idleTimeout = null;
+}
+
+function zoom() {
+	console.log("Hello")
+  var t = canvas.transition().duration(750);
+  canvas.selectAll("circle").transition(t)
+			.attr("transform", function(d){
+				console.log(d)
+				if(!d){
+					return
+				}
+				if (d.hasOwnProperty("dnode")){
+					nodeId = d["dnode"]
+				} else if (d.hasOwnProperty("pnode")) {
+					nodeId = d["pnode"]
+				} else {
+					nodeId = d
+				}
+
+				return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
+
+
+			})
+}
+
+
 
 function drawPaths(paths, nodeID) {
 
@@ -295,7 +346,7 @@ function handlePickupMouseClick(node) {
 		nodeID = node;
 	}
 
-	// show all paths from this node 
+	// show all paths from this node
 	let paths = getPathsFromNode(nodeID);
 
 	drawPaths(paths, nodeID);
@@ -460,13 +511,15 @@ whenDocumentLoaded(() => {
 		let minLat = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][0],osmToLatLng[d["dnode"]][0]]));
 		let maxLat = d3.max(database, (d) => d3.max([osmToLatLng[d["pnode"]][0],osmToLatLng[d["dnode"]][0]]));
 
+		x0 = [minLng, maxLng]
+		y0 = [minLat, maxLat]
 		// Define the scale
 		scaleX = d3.scaleLinear()
-			.domain([minLng, maxLng])
+			.domain(x0)
 			.range([margin, width]);
 
 		scaleY = d3.scaleLinear()
-			.domain([minLat, maxLat])
+			.domain(y0)
 			.range([height, margin]);
 
 		// show pickup and dropoffs
@@ -476,6 +529,8 @@ whenDocumentLoaded(() => {
 	    // legend for pickup
 		let legend_spacing = 7;
 		let legendRadius = 5;
+
+
 
 		canvas.append("circle")
 			.attr("id", "legend_pickup")
@@ -538,6 +593,14 @@ whenDocumentLoaded(() => {
 			.text("path node")
 			//.on("click", handleLegendPathClick);
 		});
+
+		svg.selectAll(".domain")
+		    .style("display", "none");
+
+
+		canvas.append("g")
+			.attr("class", "brush")
+			.call(brush);
 
 
 
