@@ -14,14 +14,21 @@ const margin = 5;
 var svg;
 var div;
 var canvas;
+
+// database and userful dictionaries
 var database;
 var osmToLatLng;
 var osmToOccurences;
 var pickupNodes;
 var dropoffNodes;
+var pickupToNbPickups;
+var dropoffToNbDropoffs;
+
+// network scales
 var scaleX;
 var scaleY;
 
+// map variables
 var map;
 var marker;
 
@@ -34,14 +41,13 @@ function whenDocumentLoaded(action) {
 	}
 }
 
-function getPathsFromNode(node) {
+function getPathsFromNode(node, nodeClass) {
 
 	let toReturn = [];
 
 	database.forEach((row) => {
 		if(node["pnode"] === row.pnode) {
 			toReturn.push(row);
-
 		}
 	});
 
@@ -65,7 +71,7 @@ function handleDropoffMouseOver(d) {
 
 	div.transition().style("opacity", .9);
 
-	div.html(osmToOccurences[d["dnode"]])
+	div.html(" occurences : " + osmToOccurences[d["dnode"]] + "<br>" + " dropoffs : " + dropoffToNbDropoffs[d["dnode"]])
 		.style("left", (d3.event.pageX) + "px")
 		.style("top", (d3.event.pageY - 28) + "px");
 }
@@ -74,7 +80,7 @@ function handlePickupMouseOver(d) {
 
 	div.transition().style("opacity", .9);
 
-	div.html(osmToOccurences[d["pnode"]])
+	div.html(" occurences : " + osmToOccurences[d["pnode"]] + "<br>" + " pickups : " + pickupToNbPickups[d["pnode"]])
 		.style("left", (d3.event.pageX) + "px")
 		.style("top", (d3.event.pageY - 28) + "px");
 }
@@ -176,8 +182,6 @@ function drawPaths(paths, node) {
 			.on("mouseover", doSomeThing)
 			.selectAll(".Nodepath")
 			.data(function(d){
-				//t = d["t"];
-				//console.log("before :" + t);
 				return JSON.parse(d["road"]);
 			})
 			.enter()
@@ -218,7 +222,6 @@ function drawPaths(paths, node) {
 
 				})
 				.attr("transform", function(d) {
-					//console.log(t);
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
 				})
 				.style("opacity", 0)
@@ -285,7 +288,6 @@ function showAllPickupNodes() {
 				.enter()
 				//Pickup in red
 					.append("circle")
-					//.transition().duration(1000).style("opacity", .9)
 					.attr("class", "Pickup")
 					.attr("r" , normalNodeRadius)
 					.attr("transform", function(d) {
@@ -303,9 +305,6 @@ function showAllPickupNodes() {
 	.delay(function(d,i){ return 100*i * (1 / 4); })
 	.style("opacity", 1);
 }
-
-
-
 
 function handleLegendDropoffClick(){
 	hide(".Pickup");
@@ -370,16 +369,27 @@ whenDocumentLoaded(() => {
 		return data;
 	});
 
-	// promise for database and osmID to lat and lng dictionary
-	Promise.all([database_promise, osmToLatLng_promise, pickupNodes_promise, dropoffNodes_promise, osmToOccurences_promise]).then((results) => {
+	const pickupToNbPickups_promise = $.getJSON("data/pickupToNbPickups.json", function(json){}).then((data) => {
+		return data;
+	});
 
+	const dropoffToNbDropoffs_promise = $.getJSON("data/dropoffToNbDropoffs.json", function(json){}).then((data) => {
+		return data;
+	});
+
+	// promise for database and osmID to lat and lng dictionary
+	Promise.all([database_promise, osmToLatLng_promise, pickupNodes_promise, dropoffNodes_promise, osmToOccurences_promise, pickupToNbPickups_promise, dropoffToNbDropoffs_promise]).then((results) => {
+
+		// get all variables from promises
 		database = results[0];
 		osmToLatLng = results[1];
 		pickupNodes = results[2];
 		dropoffNodes = results[3];
 		osmToOccurences = results[4];
+		pickupToNbPickups = results[5];
+		dropoffToNbDropoffs = results[6];
 
-		// Create sets useful to test if a particular node Id is
+		// Create sets : useful to test if a particular node id is contained in set
 		pickupNodesSet = new Set();
 		dropOffNodesSet = new Set();
 
@@ -390,9 +400,6 @@ whenDocumentLoaded(() => {
 		dropoffNodes.forEach(function(n){
 			dropOffNodesSet.add(Number(n["dnode"]));
 		})
-
-
-		// Creating the scale
 
 		// find the domain
 		let minLng = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][1],osmToLatLng[d["dnode"]][1]]));
@@ -410,10 +417,9 @@ whenDocumentLoaded(() => {
 			.domain([minLat, maxLat])
 			.range([height, margin]);
 
+		// show pickup and dropoffs
 		showAllDropoffNodes();
 		showAllPickupNodes();
-
-
 
 	    // legend for pickup
 		let legend_spacing = 7;
@@ -449,8 +455,6 @@ whenDocumentLoaded(() => {
 			.text("dropoff")
 			.on("click", handleLegendDropoffClick);
 
-
-
 		// legend for both pickup and dropoff
 		canvas.append("circle")
 			.attr("id", "legend_pickup_dropoff")
@@ -461,7 +465,6 @@ whenDocumentLoaded(() => {
 		    .style("stroke", "red")      // set the line colour
 		    .style("fill", "blue")
 			.on("click", handleLegendPickupAndDropoffClick);
-
 
 		canvas.append("text")
 			.attr("x", margin + legendRadius + 3)
@@ -476,7 +479,6 @@ whenDocumentLoaded(() => {
 			.attr("cy", margin + 6* legendRadius + 3*legend_spacing)
 			.attr("r", legendRadius)
 			.attr("fill", "green");
-
 
 		canvas.append("text")
 			.attr("x", margin + legendRadius + 3)
