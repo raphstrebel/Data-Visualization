@@ -333,6 +333,8 @@ function initializeMap() {
 	// load a tile layer
 	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
+		minZoom: 10,
+		maxZoom: 17
 	}).addTo(infoMap);
 
 	// disable all map features
@@ -376,12 +378,11 @@ function showNodeOnMap(nodeID, nodeClass) {
 	marker = L.marker([nodeLat, nodeLng]).addTo(infoMap);
 }
 
-function updateInfoMap(lngL, lngR, latU, latD) {
-	let centerLng = (lngL+lngR)/2;
-	let centerLat = (latU+latD)/2;
-	let maxDiff = Math.max(lngR-lngL, latD-latU);
-	
-	infoMap.setView([centerLat, centerLng], Math.round(15-10*maxDiff));
+function centerInfoMap(lngL, lngR, latU, latD) {
+	infoMap.fitBounds([
+	    [latU, lngL],
+	    [latD, lngR]
+	]);
 }
 
 // ----------------------------------------- BRUSHING -----------------------------------------
@@ -402,7 +403,7 @@ function brushended() {
 	[lngL, lngR] = [s[0][0], s[1][0]].map(scaleX.invert, scaleX);
 	[latU, latD] = [s[1][1], s[0][1]].map(scaleY.invert, scaleY);
 
-	updateInfoMap(lngL, lngR, latU, latD);
+	centerInfoMap(lngL, lngR, latU, latD);
 }
 
 
