@@ -41,7 +41,7 @@ function getPathsFromNode(node) {
 	database.forEach((row) => {
 		if(node["pnode"] === row.pnode) {
 			toReturn.push(row);
-			nbPaths++;
+
 		}
 	});
 
@@ -156,15 +156,17 @@ function handlePickupMouseClick(node) {
 	/* show all paths from this node */
 	let paths = getPathsFromNode(node);
 
-	drawPaths(paths);
+	drawPaths(paths, node["pnode"]);
 
 	// Show node on map (in information section)
 	showNodeOnMap(node, "Pickup");
 }
 
-function drawPaths(paths) {
+function drawPaths(paths, node) {
 	//console.log(paths[0]);
 	//var t = 0;
+
+
 
 	var p = canvas.selectAll(".Path")
 		.data(paths)
@@ -181,6 +183,11 @@ function drawPaths(paths) {
 			.enter()
 			.append("circle")
 				.attr("fill", function(d){
+					// Selected node in black
+					if (d == node){
+						return "black"
+					}
+
 					if (pickupNodesSet.has(d)){
 						return "red";
 					}
@@ -190,6 +197,9 @@ function drawPaths(paths) {
 					return "green";
 				})
 				.attr("class", function(d){
+					if (d == node){
+						return "Selected"
+					}
 					if (pickupNodesSet.has(d)){
 						return "Pickup";
 					}
@@ -199,7 +209,14 @@ function drawPaths(paths) {
 					return "NodepathOnly";
 
 				})
-				.attr("r", pathNodeRadius)
+				.attr("r", function(d){
+					if (d == node){
+						return pathNodeRadius + 1
+					}
+
+					return pathNodeRadius
+
+				})
 				.attr("transform", function(d) {
 					//console.log(t);
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
@@ -220,6 +237,7 @@ function drawPaths(paths) {
 
 	canvas.selectAll(".Dropoff").moveUp();
 	canvas.selectAll(".Pickup").moveUp();
+	canvas.selectAll(".Selected").moveUp();
 }
 
 function handleDropoffMouseClick(node) {
@@ -229,8 +247,9 @@ function handleDropoffMouseClick(node) {
 
 	/* show all paths from this node */
 	let paths = getPathsToNode(node);
+	console.log(node);
 
-	drawPaths(paths);
+	drawPaths(paths, node["dnode"]);
 
 	// Show node on map (in information section)
 	showNodeOnMap(node, "Dropoff");
