@@ -85,5 +85,11 @@ div.infoBox {
     pointer-events: stroke;
     stroke-width: 50px;
     stroke: transparent;
-    cursor: crosshair;
+}
+
+.handle {
+    fill: #000;
+    stroke: #000;
+    stroke-opacity: 0.5;
+    stroke-width: 1.25px;
 }
