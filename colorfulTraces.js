@@ -563,8 +563,6 @@ function getPathsToNode(nodeID) {
 
 function calculateScale(width, height){
 
-
-
 	scaleX = d3.scaleLinear()
 		.domain(x0)
 		.range([2*margin, width]);
