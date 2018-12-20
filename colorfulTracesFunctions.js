@@ -35,10 +35,19 @@ var scaleY;
 var infoMap;
 var marker;
 
+// slider
+var slider;
+var handle;
+var x;
+
+
 // Brushing
 let brush = d3.brush().on("end", brushended),
 		idleTimeout,
 		idleDelay = 350;
+
+// Slider 
+var slider;
 
 // Selection is important for the kind of stats we want to see
 let selection = "all";
@@ -408,11 +417,11 @@ function showAllNodesByOccurrence() {
    		.range(["#112231","#3C769D"])
 		//.range(['black', 'violet', 'violet', 'violet', 'blue', 'green', 'green', 'red', 'white']);
 
-	blackLightningNetwork.selectAll(".Node")
+	var nodes = blackLightningNetwork.selectAll(".Node")
 		.data(allNodes)
 			.enter()
 				.append("circle")
-				.attr("class", "Pickup")
+				.attr("class", "Node")
 				.attr("r" , pathNodeRadius)
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
@@ -420,7 +429,7 @@ function showAllNodesByOccurrence() {
 				.attr("fill", function(d,i){
 					return linearScale(osmToOccurences[d]);
 				})
-				.style("opacity", 1);
+	nodes.style("opacity", 1);
 }
 
 // ----------------------------------------- HELPFUL FUNCTIONS -----------------------------------------
@@ -572,6 +581,13 @@ function zoom() {
 			})
 }
 
+// ----------------------------------------- SLIDER -----------------------------------------
+
+function changeOpacity(h) {
+	handle.attr("cx", x(h));
+	blackLightningNetwork.selectAll(".Node").style("opacity", h);
+}
+
 // ----------------------------------------- ON DOCUMENT LOAD -----------------------------------------
 
 whenDocumentLoaded(() => {
@@ -610,6 +626,46 @@ whenDocumentLoaded(() => {
     // initalize map centered on lausanne region
 	initializeMap();
 	infoMap.setView([46.5201349,6.6308389], 10);
+
+
+	// initialize slider
+
+	let sliderWidth = 300;
+
+	x = d3.scaleLinear()
+    .domain([0, 1])
+    .range([0, sliderWidth])
+    .clamp(true);
+
+    slider = blackLightningNetworkSVG.append("g")
+	    .attr("class", "slider")
+	    .attr("transform", "translate(" + margin+5 + "," + margin+5 + ")");
+
+	slider.append("line")
+    .attr("class", "track")
+    .attr("x1", x.range()[0])
+    .attr("x2", x.range()[1])
+ 	.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+    .attr("class", "track-inset")
+  	.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+    .attr("class", "track-overlay")
+    .call(d3.drag()
+        .on("start.interrupt", function() { slider.interrupt(); })
+        .on("start drag", function() { changeOpacity(x.invert(d3.event.x)); }));
+
+    slider.insert("g", ".track-overlay")
+    .attr("class", "ticks")
+    .attr("transform", "translate(0," + 18 + ")")
+  	.selectAll("text")
+  	.data(x.ticks(10))
+  	.enter().append("text")
+    .attr("x", x)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return d; });
+
+	handle = slider.insert("circle", ".track-overlay")
+    	.attr("class", "handle")
+    	.attr("r", 9);
 
 	// Load the database
 	const database_promise = d3.csv("data/cleaned.csv").then( (data) => {
