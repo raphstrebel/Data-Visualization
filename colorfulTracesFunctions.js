@@ -50,7 +50,7 @@ var x;
 let selection = "appear";
 
 // Used to know when to load or not the nodes
-appeared = false
+appeared = false;
 
 
 let width = MIN_WIDTH;
@@ -224,9 +224,14 @@ function showAllPickupNodes() {
 }
 
 function drawControls(){
+
+
 	control = d3.select("#control")
 		.attr("width", width)
 		.attr("height", 15)
+
+	control.selectAll("*").remove()
+
 
 		// legend for pickup
 	let legend_spacing = width/4;
@@ -499,7 +504,7 @@ function showAllNodesByOccurrence() {
 		.data(allNodes)
 			.enter()
 				.append("circle")
-				.attr("class", "Node")
+				.attr("class", "Pickup")
 				.attr("r" , pathNodeRadius)
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
@@ -555,11 +560,11 @@ function calculateScale(width, height){
 
 	scaleX = d3.scaleLinear()
 		.domain(x0)
-		.range([margin, width]);
+		.range([2*margin, width]);
 
 	scaleY = d3.scaleLinear()
 	.domain(y0)
-	.range([height, margin]);
+	.range([height, 2*margin]);
 
 }
 
@@ -702,7 +707,7 @@ function initializeSlider() {
 	  	.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
 	    .attr("class", "track-overlay")
 	    .on("mouseover", function(d) {
-       		d3.select(this).style("cursor", "pointer"); 
+       		d3.select(this).style("cursor", "pointer");
       	})
 	    .call(d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
@@ -724,7 +729,7 @@ function initializeSlider() {
 }
 
 function changeOpacity(h) {
-	
+
 	var linearScale = d3.scalePow()
 		.domain([0, 40])
    		.range(["#112231","#3C769D"]);
@@ -752,17 +757,10 @@ whenDocumentLoaded(() => {
 		.attr("fill", "black");
 
 	interactiveNetwork = d3.select("#interactiveNetwork")
-		.attr("width", width + margin)
-		.attr("height", heightInteracitveNetwork + margin);
+		.attr("width", width )
+		.attr("height", heightInteracitveNetwork );
 
-	// Adds the svg interactiveNetwork
-	svg = d3.select("body")
-	    .append("svg")
-	        .attr("width", width + margin)
-	        .attr("height", height + margin)
-	    .append("g")
-	        .attr("transform",
-	              "translate(" + margin + "," + margin + ")");
+
 
 	// Adds the svg blackLightningNetwork
 	blackLightningNetworkSVG = d3.select("#blackLightningNetwork")
@@ -853,27 +851,31 @@ whenDocumentLoaded(() => {
 
 		// show pickup and dropoffs, Only when they appear at the screen
 		$(window).scroll(function() {
-		    var hT = $('#scroll-to').offset().top,
-		       hH = $('#scroll-to').outerHeight(),
-		       wH = $(window).height(),
-		       wS = $(this).scrollTop();
-		    if ((wS > (hT+hH-wH) && (hT > wS) && (wS+wH > hT+hH)) && !appeared){
-				 showAllDropoffNodes();
-				 showAllPickupNodes();
-				 appeared = true;
-		    } 
-		});
+   var hT = $('#scroll-to').offset().top,
+       hH = $('#scroll-to').outerHeight(),
+       wH = $(window).height(),
+       wS = $(this).scrollTop();
+   if ((wS > (hT+hH-wH) && (hT > wS) && (wS+wH > hT+hH)) && !appeared){
+		 showAllDropoffNodes();
+		 showAllPickupNodes();
+		 appeared = true;
+   }
+	});
 
 		// Handle rescaling the window
 		$(window).resize(function(){
 			width = $(window).width();
 			height =$(window).height();
-
 			calculateScale(width, 0.6 * height);
 			d3.select("#interactiveNetwork").attr("width", width + margin)
 				.attr("height", 0.6*height + margin);
 			d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
+			d3.select("#control").attr("width", width)
+
+			interactiveNetwork.select(".brush").call(brush);
+
 			zoom()
+			drawControls()
 		});
 
 
@@ -890,7 +892,7 @@ whenDocumentLoaded(() => {
 			//.on("click", handleLegendPathClick);
 		});
 
-		svg.selectAll(".domain")
+		interactiveNetwork.selectAll(".domain")
 		    .style("display", "none");
 
 		blackLightningNetworkSVG.selectAll(".domain")
