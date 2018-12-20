@@ -4,12 +4,13 @@
 // global constants
 const normalNodeRadius = 3;
 const pathNodeRadius = 2;
-const width = 1000;
-const height = 700;
+
 const margin = 5;
 const maxOccurence = 1103;
-const legendRadius = 5
-const radius = 5
+const legendRadius = 5;
+const radius = 5;
+const MIN_WIDTH = 500;
+const MIN_HEIGHT = 400;
 
 // visualization tools and networks
 var svg;
@@ -50,6 +51,11 @@ let selection = "appear";
 
 // Used to know when to load or not the nodes
 appeared = false
+
+
+let width = MIN_WIDTH;
+let height = MIN_HEIGHT;
+
 
 
 // ----------------------------------------- Stats selection ----------------------------------------
@@ -543,6 +549,20 @@ function getPathsToNode(nodeID) {
 	return toReturn;
 }
 
+function calculateScale(width, height){
+
+
+
+	scaleX = d3.scaleLinear()
+		.domain(x0)
+		.range([margin, width]);
+
+	scaleY = d3.scaleLinear()
+	.domain(y0)
+	.range([height, margin]);
+
+}
+
 // ----------------------------------------- INFO MAP -----------------------------------------
 
 function initializeMap() {
@@ -721,15 +741,20 @@ function changeOpacity(h) {
 // ----------------------------------------- ON DOCUMENT LOAD -----------------------------------------
 
 whenDocumentLoaded(() => {
+	// Calculate dynamically the width height
+	width = $(window).width()
+	height =$(window).height()
 
-	interactiveNetwork = d3.select("#interactiveNetwork")
-		.attr("width", width + margin)
-		.attr("height", height + margin);
+	heightInteracitveNetwork = 0.6 * width
 
 	blackLightningNetwork = d3.select("#blackLightningNetwork")
 		.attr("width", width)
 		.attr("height", height)
 		.attr("fill", "black");
+
+	interactiveNetwork = d3.select("#interactiveNetwork")
+		.attr("width", width + margin)
+		.attr("height", heightInteracitveNetwork + margin);
 
 	// Adds the svg interactiveNetwork
 	svg = d3.select("body")
@@ -822,17 +847,12 @@ whenDocumentLoaded(() => {
 
 		x0 = [minLng, maxLng]
 		y0 = [minLat, maxLat]
-		// Define the scale
-		scaleX = d3.scaleLinear()
-			.domain(x0)
-			.range([margin, width]);
 
-		scaleY = d3.scaleLinear()
-			.domain(y0)
-			.range([height, margin]);
+		// Define the scale
+		calculateScale(width, heightInteracitveNetwork)
+
 
 		// show pickup and dropoffs, Only when they appear at the screen
-		// 
 		$(window).scroll(function() {
 		    var hT = $('#scroll-to').offset().top,
 		       hH = $('#scroll-to').outerHeight(),
@@ -841,13 +861,21 @@ whenDocumentLoaded(() => {
 		    if ((wS > (hT+hH-wH) && (hT > wS) && (wS+wH > hT+hH)) && !appeared){
 				 showAllDropoffNodes();
 				 showAllPickupNodes();
-				 appeared = true
-
-		    } else {
-
-				 //removeAll();
-		    }
+				 appeared = true;
+		    } 
 		});
+
+	// Handle rescaling the window
+	$(window).resize(function(){
+		width = $(window).width();
+		height =$(window).height();
+
+		calculateScale(width, 0.6 * height);
+		d3.select("#interactiveNetwork").attr("width", width + margin)
+			.attr("height", 0.6*height + margin);
+		d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
+		zoom()
+	});
 
 
 		//	showPickupAndDropoffByNbPickupsAndDropoffs();
