@@ -7,7 +7,6 @@ html, body, figure {
 
 body  {
     background-color: #cccccc;
-		   /*background-color: #000000;*/
 }
 
 
@@ -62,29 +61,29 @@ div.infoBox {
 }
 
 .ticks {
-  font: 10px sans-serif;
+    font: 10px sans-serif;
 }
 
 .track,
 .track-inset,
 .track-overlay {
-  stroke-linecap: round;
+    stroke-linecap: round;
 }
 
 .track {
-  stroke: #000;
-  stroke-opacity: 0.3;
-  stroke-width: 10px;
+    stroke: #000;
+    stroke-opacity: 0.3;
+    stroke-width: 10px;
 }
 
 .track-inset {
-  stroke: #ddd;
-  stroke-width: 8px;
+    stroke: #ddd;
+    stroke-width: 8px;
 }
 
 .track-overlay {
-  pointer-events: stroke;
-  stroke-width: 50px;
-  stroke: transparent;
-  cursor: crosshair;
+    pointer-events: stroke;
+    stroke-width: 50px;
+    stroke: transparent;
+    cursor: crosshair;
 }
