@@ -11,7 +11,6 @@ body  {
     font-family: "Montserrat";
 }
 
-
 h1{
 	margin-bottom: 7px;
 }
@@ -34,8 +33,6 @@ h4{
     margin-bottom: 5px;
     background-color: #000000;
 }
-
-
 
 .Pickup:hover, .Dropoff:hover, .Legend:hover {
 	cursor: pointer;
