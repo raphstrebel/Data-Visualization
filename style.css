@@ -11,13 +11,25 @@ body  {
     font-family: "Montserrat";
 }
 
-h1{
-	margin-bottom: 7px;
+p {
+	padding-left: 20%;
+	padding-right: 20%;
+	text-align: justify;
+	padding-bottom: 10%;
+
 }
+
+
+h1 , h3 {
+	padding-top: 5%;
+	text-align: center;
+}
+
 
 h4{
 	margin-top: 5px;
 	font-style: italic;
+	text-align: center;
 }
 
 #infoMap{
@@ -33,6 +45,13 @@ h4{
     margin-bottom: 5px;
     background-color: #000000;
 }
+
+.brush{
+	stroke: #fff;
+	fill-opacity: .125;
+	shape-rendering: crispEdges;
+}
+
 
 .Pickup:hover, .Dropoff:hover, .Legend:hover {
 	cursor: pointer;
@@ -76,11 +95,4 @@ div.infoBox {
     pointer-events: stroke;
     stroke-width: 50px;
     stroke: transparent;
-}
-
-.handle {
-    fill: #000;
-    stroke: #000;
-    stroke-opacity: 0.5;
-    stroke-width: 1.25px;
 }
