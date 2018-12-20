@@ -38,6 +38,21 @@ let brush = d3.brush().on("end", brushended),
 		idleTimeout,
 		idleDelay = 350;
 
+// Selection is important for the kind of stats we want to see
+let selection = "all";
+
+// ----------------------------------------- Stats selection ----------------------------------------
+
+function changeStats(mode, elem){
+	console.log(mode)
+	console.log(elem)
+
+
+}
+
+
+
+
 // ----------------------------------------- MOUSE HANDLERS -----------------------------------------
 
 function handleDropoffMouseOver(node) {
@@ -80,6 +95,7 @@ function handleMouseOut() {
 }
 
 function handleDropoffMouseClick(node) {
+	changeStats("node", node)
 	handleMouseOut();
 	hide(".Pickup");
 	hide(".Dropoff");
@@ -295,7 +311,7 @@ function showPickupAndDropoffByNbPickupsAndDropoffs() {
 
 	var linearScale = d3.scaleLinear()
 		.domain([0, 20])
-		//.interpolate(d3.interpolateHcl) 
+		//.interpolate(d3.interpolateHcl)
 		//.range(['blue','red']);
 		.range(['blue', 'green']);
 
@@ -315,7 +331,7 @@ function showPickupAndDropoffByNbPickupsAndDropoffs() {
 					}
 					return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
 				})
-				.attr("fill", function(d,i){ 
+				.attr("fill", function(d,i){
 					if (d.hasOwnProperty("dnode")){
 						return linearScale([dropoffToNbDropoffs[d["dnode"]]]);
 					} else {
@@ -333,7 +349,7 @@ function showPickupByNbPickups() {
 
 	var linearScale = d3.scaleLinear()
 		.domain([0, 20])
-		//.interpolate(d3.interpolateHcl) 
+		//.interpolate(d3.interpolateHcl)
 		//.range(['blue','red']);
 		.range(['red', 'white']);
 
@@ -346,7 +362,7 @@ function showPickupByNbPickups() {
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
 				})
-				.attr("fill", function(d,i){ 
+				.attr("fill", function(d,i){
 					return linearScale(pickupToNbPickups[d["pnode"]]);
 				})
 				.style("opacity", 0)
@@ -359,7 +375,7 @@ function showPickupByNbPickups() {
 function showDropoffByNbDropoffs() {
 	var linearScale = d3.scaleLinear()
 		.domain([0, 5])
-		//.interpolate(d3.interpolateHcl) 
+		//.interpolate(d3.interpolateHcl)
 		//.range(['blue','red']);
 		.range(['blue', 'DodgerBlue', 'white']);
 
@@ -372,7 +388,7 @@ function showDropoffByNbDropoffs() {
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
 				})
-				.attr("fill", function(d,i){ 
+				.attr("fill", function(d,i){
 					return linearScale(dropoffToNbDropoffs[d["dnode"]]);
 				})
 				.style("opacity", 0)
@@ -388,7 +404,7 @@ function showAllNodesByOccurrence() {
 
 	var linearScale = d3.scaleLinear()
 		.domain([0, 100])
-		.interpolate(d3.interpolateHcl) 
+		.interpolate(d3.interpolateHcl)
 		//.range(['blue','red']);
    		.range(["#112231","#3C769D"])
 		//.range(['black', 'violet', 'violet', 'violet', 'blue', 'green', 'green', 'red', 'white']);
@@ -402,7 +418,7 @@ function showAllNodesByOccurrence() {
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
 				})
-				.attr("fill", function(d,i){ 
+				.attr("fill", function(d,i){
 					return linearScale(osmToOccurences[d]);
 				})
 				.style("opacity", 0)
@@ -677,6 +693,7 @@ whenDocumentLoaded(() => {
 
 		canvas.append("circle")
 			.attr("id", "legend_pickup")
+			.attr("class", "Legend")
 			.attr("cx", margin)
 			.attr("cy", margin)
 			.attr("r", legendRadius)
@@ -687,6 +704,7 @@ whenDocumentLoaded(() => {
 			.attr("x", margin + legendRadius + 3)
 			.attr("y", margin + legendRadius)
 			.text("pickup")
+			.attr("Class", "Legend")
 			.on("click", handleLegendPickupClick);
 
 		// legend for dropoff
@@ -696,6 +714,7 @@ whenDocumentLoaded(() => {
 			.attr("cy", margin + 2* legendRadius + legend_spacing)
 			.attr("r", legendRadius)
 			.attr("fill", "blue")
+			.attr("class", "Legend")
 			.on("click", handleLegendDropoffClick);
 
 
@@ -703,6 +722,7 @@ whenDocumentLoaded(() => {
 			.attr("x", margin + legendRadius + 3)
 			.attr("y", margin + 3* legendRadius + legend_spacing )
 			.text("dropoff")
+			.attr("class", "Legend")
 			.on("click", handleLegendDropoffClick);
 
 		// legend for both pickup and dropoff
@@ -712,14 +732,16 @@ whenDocumentLoaded(() => {
 			.attr("cy", margin + 4* legendRadius + 2* legend_spacing)
 			.attr("r", legendRadius-1)
 			.style("stroke-width", 2)    // set the stroke width
-		    .style("stroke", "red")      // set the line colour
-		    .style("fill", "blue")
+		  .style("stroke", "red")      // set the line colour
+		  .style("fill", "blue")
+			.attr("class","Legend")
 			.on("click", handleLegendPickupAndDropoffClick);
 
 		canvas.append("text")
 			.attr("x", margin + legendRadius + 3)
 			.attr("y", margin + 5* legendRadius + 2*legend_spacing )
 			.text("pickup and dropoff")
+			.attr("class","Legend")
 			.on("click", handleLegendPickupAndDropoffClick);
 
 		// legend for path
