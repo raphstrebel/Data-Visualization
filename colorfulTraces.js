@@ -37,9 +37,10 @@ var infoMap;
 var marker;
 
 // Brushing
-let brush = d3.brush().on("end", brushended),
-		idleTimeout,
-		idleDelay = 350;
+let brush = d3.brush().on("end", brushended);
+
+let idleTimeout;
+let	idleDelay = 350;
 
 // slider variables
 var slider;
@@ -107,7 +108,7 @@ function handleMouseOut() {
 }
 
 function handleDropoffMouseClick(node) {
-	changeStats("node", node)
+	//changeStats("node", node);
 	handleMouseOut();
 	hide(".Pickup");
 	hide(".Dropoff");
@@ -128,6 +129,7 @@ function handleDropoffMouseClick(node) {
 
 	// Show node on map (in information section)
 	showNodeOnMap(nodeID, "Dropoff");
+
 }
 
 function handlePickupMouseClick(node) {
@@ -187,6 +189,7 @@ function showAllDropoffNodes() {
 				.append("circle")
 				.attr("class", "Dropoff")
 				.attr("r" , normalNodeRadius)
+				.attr("id", function(d){return d["dnode"];})
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
 				})
@@ -209,6 +212,7 @@ function showAllPickupNodes() {
 				.append("circle")
 				.attr("class", "Pickup")
 				.attr("r" , normalNodeRadius)
+				.attr("id", function(d){return d["pnode"];})
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
 				})
@@ -342,6 +346,7 @@ function drawPaths(paths, nodeID) {
 						return "NodepathOnly";
 					}
 				})
+				.attr("id", function(d){return d;})
 				.attr("r", function(d){
 					if (d == nodeID){
 						return pathNodeRadius + 1
@@ -450,6 +455,7 @@ function showPickupByNbPickups() {
 				.append("circle")
 				.attr("class", "Pickup")
 				.attr("r" , normalNodeRadius)
+				.attr("id", function(d){return d["pnode"];})
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
 				})
@@ -476,6 +482,7 @@ function showDropoffByNbDropoffs() {
 				.append("circle")
 				.attr("class", "Pickup")
 				.attr("r" , normalNodeRadius)
+				.attr("id", function(d){return d["dnode"];})
 				.attr("transform", function(d) {
 					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
 				})
@@ -633,6 +640,7 @@ function centerInfoMap(lngL, lngR, latU, latD) {
 // ----------------------------------------- BRUSHING -----------------------------------------
 
 function brushended() {
+
 	var s = d3.event.selection;
 	if (!s) {
 		if (!idleTimeout) return idleTimeout = setTimeout(idled, idleDelay);
@@ -650,6 +658,14 @@ function brushended() {
 		[latU, latD] = [s[1][1], s[0][1]].map(scaleY.invert, scaleY);
 
 		centerInfoMap(lngL, lngR, latU, latD);
+		// [pickupNodesInBrushing, dropoffNodesInBrushing, pathNodesInBrushing]
+		allNodesInBrushing = getNodesInBrush(lngL, lngR, latU, latD);
+
+		console.log("hey");
+		console.log(allNodesInBrushing.Pickup);
+		console.log(allNodesInBrushing.Dropoff);
+		console.log(allNodesInBrushing.Path);
+
 	} else {
 		infoMap.setView([46.5201349,6.6308389], 10);
 	}
@@ -679,6 +695,79 @@ function zoom() {
 				return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
 			})
 }
+
+function getNodesInBrush(lngL, lngR, latU, latD) {
+	pickupSelected = interactiveNetwork.selectAll(".Pickup")._groups[0];
+	dropoffSelected = interactiveNetwork.selectAll(".Dropoff")._groups[0];
+	pathSelected = interactiveNetwork.selectAll(".NodepathOnly")._groups[0];
+
+	console.log("lngL " +lngL);
+	console.log("lngR " +lngR);
+	console.log("latU " +latU);
+	console.log("latD " +latD);
+
+	// Get sets of selected nodes by class
+
+	pickupSelectedSet = new Set();
+
+	for(i = 0; i < pickupSelected.length; i++) {
+		pickupSelectedSet.add(pickupSelected[i].__data__.pnode);
+	}
+
+	dropoffSelectedSet = new Set();
+
+	for(i = 0; i < dropoffSelected.length; i++) {
+		dropoffSelectedSet.add(dropoffSelected[i].__data__.dnode);
+	}
+
+	pathSelectedSet = new Set();
+
+	for(i = 0; i < pathSelected.length; i++) {
+		pathSelectedSet.add(pathSelected[i].__data__);
+	}
+
+	console.log(pickupSelectedSet);
+
+	// Get nodes in brushing
+	pickupNodesInBrushing = getAllNodesInBounds(pickupSelectedSet, lngL, lngR, latU, latD);
+	//dropoffNodesInBrushing = getAllNodesInBounds(dropoffSelectedSet, lngL, lngR, latU, latD);
+	//pathNodesInBrushing = getAllNodesInBounds(pathSelectedSet, lngL, lngR, latU, latD);
+
+	return {
+		Pickup: pickupNodesInBrushing,
+		//Dropoff: dropoffNodesInBrushing,
+		//Path: pathNodesInBrushing
+	}
+}
+
+function getAllNodesInBounds(selectedSet, lngL, lngR, latU, latD) {
+
+	nodesInBrushing = new Set();
+
+	selectedSet.forEach(function(node) {
+		lat = Number(osmToLatLng[node][0]);
+		lng = Number(osmToLatLng[node][1]);
+
+		console.log(node);
+		console.log("lat : " + lat);
+		console.log("lng : " + lng);
+
+		if(lngL <= lng && lng <= lngR && latU <= lat && lat <= latD){
+			nodesInBrushing.add(node);
+		} 
+	}); 
+
+	return nodesInBrushing;
+}
+
+/*function brushmove() {
+	var extent = brush.extent();
+	
+	allNodes.classed("Selected", function(d) {
+		is_brushed = extent[0] <= d.index && d.index <= extent[1];
+		return is_brushed;
+	});
+}*/
 
 // ----------------------------------------- SLIDER -----------------------------------------
 
