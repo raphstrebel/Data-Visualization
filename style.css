@@ -15,9 +15,16 @@ h4{
     border-width: 1px;
 }
 
-body  {
-    /*background-color: #cccccc;*/
+#blackLightningDiv{
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 5px;
     background-color: #000000;
+}
+
+body  {
+    background-color: #cccccc;
+    /*background-color: #000000;*/
 }
 
 .Pickup:hover {

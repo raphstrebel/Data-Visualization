@@ -14,7 +14,9 @@ const margin = 5;
 const maxOccurence = 1103;
 var svg;
 var div;
-var canvas;
+var interactiveNetwork;
+var blackLightningNetwork;
+var blackLightningNetworkSVG;
 
 // database and userful dictionaries
 var database;
@@ -160,15 +162,15 @@ function handleLegendPickupAndDropoffClick(){
 // ----------------------------------------- SHOWING POINTS -----------------------------------------
 
 function hide(nodeClass) {
-	canvas.selectAll(nodeClass).remove();
+	interactiveNetwork.selectAll(nodeClass).remove();
 }
 
 function hideAllPickupNodes() {
-	canvas.selectAll(".Pickup").data(pickupNodes).exit().remove();
+	interactiveNetwork.selectAll(".Pickup").data(pickupNodes).exit().remove();
 }
 
 function showAllDropoffNodes() {
-	canvas.selectAll(".Dropoff")
+	interactiveNetwork.selectAll(".Dropoff")
 		.data(dropoffNodes)
 			.enter()
 			//Dropoff in blue
@@ -190,7 +192,7 @@ function showAllDropoffNodes() {
 }
 
 function showAllPickupNodes() {
-	canvas.selectAll(".Pickup")
+	interactiveNetwork.selectAll(".Pickup")
 		.data(pickupNodes)
 			.enter()
 			//Pickup in red
@@ -213,7 +215,7 @@ function showAllPickupNodes() {
 
 function drawPaths(paths, nodeID) {
 
-	canvas.selectAll(".Path")
+	interactiveNetwork.selectAll(".Path")
 		.data(paths)
 		.enter()
 		.append("g")
@@ -221,9 +223,6 @@ function drawPaths(paths, nodeID) {
 			.on("mouseover", doNothing)
 			.selectAll(".Nodepath")
 			.data(function(d){
-				num = d["t"].charAt(0) + "" + d["t"].charAt(1)
-				console.log(d["road"] + "," + Number(num));
-				console.log(typeof d["road"])
 				return JSON.parse(d["road"]);
 			})
 			.enter()
@@ -300,9 +299,9 @@ function drawPaths(paths, nodeID) {
 		});
 	};
 
-	canvas.selectAll(".Dropoff").moveUp();
-	canvas.selectAll(".Pickup").moveUp();
-	canvas.selectAll(".Selected").moveUp();
+	interactiveNetwork.selectAll(".Dropoff").moveUp();
+	interactiveNetwork.selectAll(".Pickup").moveUp();
+	interactiveNetwork.selectAll(".Selected").moveUp();
 }
 
 function showPickupAndDropoffByNbPickupsAndDropoffs() {
@@ -315,7 +314,7 @@ function showPickupAndDropoffByNbPickupsAndDropoffs() {
 		//.range(['blue','red']);
 		.range(['blue', 'green']);
 
-	canvas.selectAll(".Node")
+	interactiveNetwork.selectAll(".Node")
 		.data(pickupAndDropoffs)
 			.enter()
 				.append("circle")
@@ -353,7 +352,7 @@ function showPickupByNbPickups() {
 		//.range(['blue','red']);
 		.range(['red', 'white']);
 
-	canvas.selectAll(".Node")
+	interactiveNetwork.selectAll(".Node")
 		.data(pickupNodes)
 			.enter()
 				.append("circle")
@@ -379,7 +378,7 @@ function showDropoffByNbDropoffs() {
 		//.range(['blue','red']);
 		.range(['blue', 'DodgerBlue', 'white']);
 
-	canvas.selectAll(".Node")
+	interactiveNetwork.selectAll(".Node")
 		.data(dropoffNodes)
 			.enter()
 				.append("circle")
@@ -409,7 +408,7 @@ function showAllNodesByOccurrence() {
    		.range(["#112231","#3C769D"])
 		//.range(['black', 'violet', 'violet', 'violet', 'blue', 'green', 'green', 'red', 'white']);
 
-	canvas.selectAll(".Node")
+	blackLightningNetwork.selectAll(".Node")
 		.data(allNodes)
 			.enter()
 				.append("circle")
@@ -421,10 +420,6 @@ function showAllNodesByOccurrence() {
 				.attr("fill", function(d,i){
 					return linearScale(osmToOccurences[d]);
 				})
-				.style("opacity", 0)
-				.transition()
-				.duration(1000)
-				.delay(function(d,i){ return  2*i; })
 				.style("opacity", 1);
 }
 
@@ -538,14 +533,18 @@ function brushended() {
   	} else {
 	    scaleX.domain([s[0][0], s[1][0]].map(scaleX.invert, scaleX));
 	    scaleY.domain([s[1][1], s[0][1]].map(scaleY.invert, scaleY));
-	    canvas.select(".brush").call(brush.move, null);
+	    interactiveNetwork.select(".brush").call(brush.move, null);
   	}
 	zoom();
 
-	[lngL, lngR] = [s[0][0], s[1][0]].map(scaleX.invert, scaleX);
-	[latU, latD] = [s[1][1], s[0][1]].map(scaleY.invert, scaleY);
+	if(s != null) {
+		[lngL, lngR] = [s[0][0], s[1][0]].map(scaleX.invert, scaleX);
+		[latU, latD] = [s[1][1], s[0][1]].map(scaleY.invert, scaleY);
 
-	centerInfoMap(lngL, lngR, latU, latD);
+		centerInfoMap(lngL, lngR, latU, latD);
+	} else {
+		infoMap.setView([46.5201349,6.6308389], 10);
+	}
 }
 
 
@@ -555,8 +554,8 @@ function idled() {
 
 function zoom() {
 	//console.log("Hello")
-  var t = canvas.transition().duration(750);
-  canvas.selectAll("circle").transition(t)
+  var t = interactiveNetwork.transition().duration(750);
+  interactiveNetwork.selectAll("circle").transition(t)
 			.attr("transform", function(d){
 				//console.log(d)
 				if(!d){
@@ -569,10 +568,7 @@ function zoom() {
 				} else {
 					nodeId = d
 				}
-
 				return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
-
-
 			})
 }
 
@@ -580,11 +576,16 @@ function zoom() {
 
 whenDocumentLoaded(() => {
 
-	canvas = d3.select("#network")
+	interactiveNetwork = d3.select("#interactiveNetwork")
 		.attr("width", width + margin)
 		.attr("height", height + margin);
 
-	// Adds the svg canvas
+	blackLightningNetwork = d3.select("#blackLightningNetwork")
+		.attr("width", width)
+		.attr("height", height)
+		.attr("fill", "black");
+
+	// Adds the svg interactiveNetwork
 	svg = d3.select("body")
 	    .append("svg")
 	        .attr("width", width + margin)
@@ -593,13 +594,22 @@ whenDocumentLoaded(() => {
 	        .attr("transform",
 	              "translate(" + margin + "," + margin + ")");
 
+	// Adds the svg blackLightningNetwork
+	blackLightningNetworkSVG = d3.select("body")
+	    .append("svg")
+	        .attr("width", width)
+	        .attr("height", height);
+	   /* .append("g")
+	        .attr("transform",
+	              "translate(" + margin + "," + margin + ")");*/
+
 	div = d3.select("body").append("div")
 	    .attr("class", "infoBox")
 	    .style("opacity", 0);
 
     // initalize map centered on lausanne region
 	initializeMap();
-	infoMap.setView([46.5201349,6.6308389], 12);
+	infoMap.setView([46.5201349,6.6308389], 10);
 
 	// Load the database
 	const database_promise = d3.csv("data/cleaned.csv").then( (data) => {
@@ -677,21 +687,21 @@ whenDocumentLoaded(() => {
 
 		// show pickup and dropoffs
 		//showAllDropoffNodes();
-		showAllPickupNodes();
+		//showAllPickupNodes();
 
-		//showPickupAndDropoffByNbPickupsAndDropoffs();
+		showPickupAndDropoffByNbPickupsAndDropoffs();
+
+		// for this one put background in black
+		showAllNodesByOccurrence();
 
 		//showPickupByNbPickups();
 		//showDropoffByNbDropoffs();
-
-		// for this one put background in black
-		//showAllNodesByOccurrence();
 
 	    // legend for pickup
 		let legend_spacing = 7;
 		let legendRadius = 5;
 
-		canvas.append("circle")
+		interactiveNetwork.append("circle")
 			.attr("id", "legend_pickup")
 			.attr("class", "Legend")
 			.attr("cx", margin)
@@ -700,7 +710,7 @@ whenDocumentLoaded(() => {
 			.attr("fill", "red")
 			.on("click", handleLegendPickupClick);
 
-		canvas.append("text")
+		interactiveNetwork.append("text")
 			.attr("x", margin + legendRadius + 3)
 			.attr("y", margin + legendRadius)
 			.text("pickup")
@@ -708,7 +718,7 @@ whenDocumentLoaded(() => {
 			.on("click", handleLegendPickupClick);
 
 		// legend for dropoff
-		canvas.append("circle")
+		interactiveNetwork.append("circle")
 			.attr("id", "legend_dropoff")
 			.attr("cx", margin)
 			.attr("cy", margin + 2* legendRadius + legend_spacing)
@@ -718,7 +728,7 @@ whenDocumentLoaded(() => {
 			.on("click", handleLegendDropoffClick);
 
 
-		canvas.append("text")
+		interactiveNetwork.append("text")
 			.attr("x", margin + legendRadius + 3)
 			.attr("y", margin + 3* legendRadius + legend_spacing )
 			.text("dropoff")
@@ -726,7 +736,7 @@ whenDocumentLoaded(() => {
 			.on("click", handleLegendDropoffClick);
 
 		// legend for both pickup and dropoff
-		canvas.append("circle")
+		interactiveNetwork.append("circle")
 			.attr("id", "legend_pickup_dropoff")
 			.attr("cx", margin)
 			.attr("cy", margin + 4* legendRadius + 2* legend_spacing)
@@ -737,7 +747,7 @@ whenDocumentLoaded(() => {
 			.attr("class","Legend")
 			.on("click", handleLegendPickupAndDropoffClick);
 
-		canvas.append("text")
+		interactiveNetwork.append("text")
 			.attr("x", margin + legendRadius + 3)
 			.attr("y", margin + 5* legendRadius + 2*legend_spacing )
 			.text("pickup and dropoff")
@@ -745,14 +755,14 @@ whenDocumentLoaded(() => {
 			.on("click", handleLegendPickupAndDropoffClick);
 
 		// legend for path
-		canvas.append("circle")
+		interactiveNetwork.append("circle")
 			.attr("id", "legend_path")
 			.attr("cx", margin)
 			.attr("cy", margin + 6* legendRadius + 3*legend_spacing)
 			.attr("r", legendRadius)
 			.attr("fill", "green");
 
-		canvas.append("text")
+		interactiveNetwork.append("text")
 			.attr("x", margin + legendRadius + 3)
 			.attr("y", margin + 7* legendRadius + 3*legend_spacing )
 			.text("path node")
@@ -762,8 +772,10 @@ whenDocumentLoaded(() => {
 		svg.selectAll(".domain")
 		    .style("display", "none");
 
+		blackLightningNetworkSVG.selectAll(".domain")
+		    .style("display", "none");
 
-		canvas.append("g")
+		interactiveNetwork.append("g")
 			.attr("class", "brush")
 			.call(brush);
 });
