@@ -1,11 +1,7 @@
-// Tutorials followed :
-// https://maptimeboston.github.io/leaflet-intro/
-// https://www.tutorialspoint.com/leafletjs/leafletjs_getting_started.html
-// Course exercises
-// http://bl.ocks.org/WilliamQLiu/76ae20060e19bf42d774
-// http://bl.ocks.org/d3noob/a22c42db65eb00d4e369
 
-// global variable
+// ----------------------------------------- Global Variables ----------------------------------------
+
+// global constants
 const normalNodeRadius = 3;
 const pathNodeRadius = 2;
 
@@ -16,13 +12,14 @@ const radius = 5;
 const MIN_WIDTH = 500;
 const MIN_HEIGHT = 400;
 
+// visualization tools and networks
 var svg;
 var div;
 var interactiveNetwork;
 var blackLightningNetwork;
 var blackLightningNetworkSVG;
 
-// database and userful dictionaries
+// database and useful dictionaries
 var database;
 var osmToLatLng;
 var osmToOccurences;
@@ -44,6 +41,11 @@ let brush = d3.brush().on("end", brushended),
 		idleTimeout,
 		idleDelay = 350;
 
+// slider variables
+var slider;
+var handle;
+var x;
+
 // Selection is important for the kind of stats we want to see
 let selection = "appear";
 
@@ -61,12 +63,7 @@ let height = MIN_HEIGHT;
 function changeStats(mode, elem){
 	console.log(mode)
 	console.log(elem)
-
-
 }
-
-
-
 
 // ----------------------------------------- MOUSE HANDLERS -----------------------------------------
 
@@ -497,10 +494,10 @@ function showAllNodesByOccurrence() {
 	let allNodes = Object.keys(osmToOccurences);
 
 	var linearScale = d3.scaleLinear()
-		.domain([0, 100])
+		.domain([0, 50])
 		.interpolate(d3.interpolateHcl)
 		//.range(['blue','red']);
-   		.range(["#112231","#3C769D"])
+   		.range(["#112231","#3C769D"]);
 		//.range(['black', 'violet', 'violet', 'violet', 'blue', 'green', 'green', 'red', 'white']);
 
 	blackLightningNetwork.selectAll(".Node")
@@ -515,7 +512,8 @@ function showAllNodesByOccurrence() {
 				.attr("fill", function(d,i){
 					return linearScale(osmToOccurences[d]);
 				})
-				.style("opacity", 1);
+				.style("opacity", 0);;
+
 }
 
 // ----------------------------------------- HELPFUL FUNCTIONS -----------------------------------------
@@ -590,7 +588,7 @@ function initializeMap() {
 	infoMap.scrollWheelZoom.disable();
 	infoMap.boxZoom.disable();
 	infoMap.keyboard.disable();
-	infoMap.removeControl(infoMap.zoomControl);
+	//infoMap.removeControl(infoMap.zoomControl);
 
 	// set cursor to default
 	//document.getElementById('infoMap').style.cursor='default';
@@ -625,6 +623,11 @@ function showNodeOnMap(nodeID, nodeClass) {
 }
 
 function centerInfoMap(lngL, lngR, latU, latD) {
+
+	if(marker != null) {
+		infoMap.removeLayer(marker);
+	}
+
 	infoMap.fitBounds([
 	    [latU, lngL],
 	    [latD, lngR]
@@ -681,6 +684,65 @@ function zoom() {
 			})
 }
 
+// ----------------------------------------- SLIDER -----------------------------------------
+
+function initializeSlider() {
+
+	let sliderWidth = 300;
+	let sliderHeight = 100;
+
+
+	x = d3.scaleLinear()
+    	.domain([0, 1])
+    	.range([0, 230])
+    	.clamp(true);
+
+    slider = d3.select("#blackLightningSlider").attr("width", sliderWidth).attr("height", sliderHeight).append("g")
+	    .attr("class", "slider")
+	    .attr("transform", "translate(" + margin+5 + "," + margin+5 + ")");
+	   // .attr("x", "0").attr("y", "0");
+
+	slider.append("line")
+	    .attr("class", "track")
+	    .attr("x1", x.range()[0])
+	    .attr("x2", x.range()[1])
+	 	.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-inset")
+	  	.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+	    .attr("class", "track-overlay")
+	    .on("mouseover", function(d) {
+       		d3.select(this).style("cursor", "pointer");
+      	})
+	    .call(d3.drag()
+	        .on("start.interrupt", function() { slider.interrupt(); })
+	        .on("start drag", function() { changeOpacity(x.invert(d3.event.x)); }));
+
+    slider.insert("g", ".track-overlay")
+	    .attr("class", "ticks")
+	    .attr("transform", "translate(0," + 18 + ")")
+	  	.selectAll("text")
+	  	.data(x.ticks(10))
+	  	.enter().append("text")
+	    .attr("x", x)
+	    .attr("text-anchor", "middle")
+	    .text(function(d) { return d; });
+
+	handle = slider.insert("circle", ".track-overlay")
+    	.attr("class", "handle")
+    	.attr("r", 9);
+}
+
+function changeOpacity(h) {
+
+	var linearScale = d3.scalePow()
+		.domain([0, 40])
+   		.range(["#112231","#3C769D"]);
+
+	handle.attr("cx", x(h))
+		.style("fill", linearScale(x(h)));
+	blackLightningNetwork.selectAll(".Node").style("opacity", h);
+}
+
 // ----------------------------------------- ON DOCUMENT LOAD -----------------------------------------
 
 whenDocumentLoaded(() => {
@@ -702,13 +764,10 @@ whenDocumentLoaded(() => {
 
 
 	// Adds the svg blackLightningNetwork
-	blackLightningNetworkSVG = d3.select("body")
+	blackLightningNetworkSVG = d3.select("#blackLightningNetwork")
 	    .append("svg")
 	        .attr("width", width)
 	        .attr("height", height);
-	   /* .append("g")
-	        .attr("transform",
-	              "translate(" + margin + "," + margin + ")");*/
 
 	div = d3.select("body").append("div")
 	    .attr("class", "infoBox")
@@ -717,6 +776,9 @@ whenDocumentLoaded(() => {
     // initalize map centered on lausanne region
 	initializeMap();
 	infoMap.setView([46.5201349,6.6308389], 10);
+
+	// initialize slider
+	initializeSlider();
 
 	// Load the database
 	const database_promise = d3.csv("data/cleaned.csv").then( (data) => {
@@ -819,7 +881,7 @@ whenDocumentLoaded(() => {
 	});
 
 
-	//	showPickupAndDropoffByNbPickupsAndDropoffs();
+		//	showPickupAndDropoffByNbPickupsAndDropoffs();
 
 		// for this one put background in black
 		showAllNodesByOccurrence();
