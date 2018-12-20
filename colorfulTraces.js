@@ -240,14 +240,14 @@ function drawControls(){
 	control.append("circle")
 		.attr("id", "legend_pickup")
 		.attr("class", "Legend")
-		.attr("cx", margin + 0*legend_spacing)
+		.attr("cx", 2*margin + 0*legend_spacing)
 		.attr("cy", margin)
 		.attr("r", legendRadius)
 		.attr("fill", "red")
 		.on("click", handleLegendPickupClick);
 
 	control.append("text")
-		.attr("x", margin + 0*legend_spacing + radius)
+		.attr("x", 2*margin + 0*legend_spacing + radius)
 		.attr("y", margin + legend_text_extra_spacing)
 		.text("pickup")
 		.attr("class", "Legend")
@@ -745,6 +745,7 @@ function changeOpacity(h) {
 // ----------------------------------------- ON DOCUMENT LOAD -----------------------------------------
 
 whenDocumentLoaded(() => {
+
 	// Calculate dynamically the width height
 	width = $(window).width()
 	height =$(window).height()
@@ -764,13 +765,14 @@ whenDocumentLoaded(() => {
 
 	// Adds the svg blackLightningNetwork
 	blackLightningNetworkSVG = d3.select("#blackLightningNetwork")
-	    .append("svg")
-	        .attr("width", width)
-	        .attr("height", height);
+			.append("svg")
+					.attr("width", width + margin)
+					.attr("height", height);
 
 	div = d3.select("body").append("div")
-	    .attr("class", "infoBox")
-	    .style("opacity", 0);
+			.attr("class", "infoBox")
+			.style("opacity", 0);
+
 
     // initalize map centered on lausanne region
 	initializeMap();
@@ -834,6 +836,7 @@ whenDocumentLoaded(() => {
 		dropoffNodes.forEach(function(n){
 			dropOffNodesSet.add(Number(n["dnode"]));
 		})
+
 
 		// find the domain
 		let minLng = d3.min(database, (d) => d3.min([osmToLatLng[d["pnode"]][1],osmToLatLng[d["dnode"]][1]]));
