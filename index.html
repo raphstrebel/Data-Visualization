@@ -17,13 +17,23 @@
   <h4>
     by Alexandre Dumur and Raphael Strebel
   </h4>
-  <h3>Traces</h3>
-  <svg id="control"></svg>
-  <svg id="network"></svg>
-	 <div id="infoMap"></div>
-   <h3>Stats</h3>
-  <svg id="stats"></svg>
 
+  <h3>Traces</h3>
+
+
+  <div id="blackLightningDiv">
+    <svg id="blackLightningNetwork"></svg>
+  </div>
+
+  <h3>Interactive Network</h3>
+  <svg id="control"></svg>
+  <svg id="interactiveNetwork"></svg>
+   <h3 id="scroll-to">Stats</h3>
+  <svg id="stats">
+    <div id="infoMap"></div>
+  </svg>
+
+  <div id="chart"></div>
 	<script src="lib/leaflet.ajax.min.js"></script>
   <script src="lib/d3.min.js"></script>
 	<script src="colorfulTracesFunctions.js"></script>
