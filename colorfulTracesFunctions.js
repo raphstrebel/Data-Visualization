@@ -619,10 +619,6 @@ function showNodeOnMap(nodeID, nodeClass) {
 
 function centerInfoMap(lngL, lngR, latU, latD) {
 
-	if(marker != null) {
-		infoMap.removeLayer(marker);
-	}
-
 	infoMap.fitBounds([
 	    [latU, lngL],
 	    [latD, lngR]
@@ -735,6 +731,9 @@ function changeOpacity(h) {
 
 	handle.attr("cx", x(h))
 		.style("fill", linearScale(x(h)));
+
+	/*document.getElementById("blackLightningText").style.color = linearScale(x(h));*/
+
 	blackLightningNetwork.selectAll(".Node").style("opacity", h);
 }
 
@@ -865,17 +864,17 @@ whenDocumentLoaded(() => {
 		    } 
 		});
 
-	// Handle rescaling the window
-	$(window).resize(function(){
-		width = $(window).width();
-		height =$(window).height();
+		// Handle rescaling the window
+		$(window).resize(function(){
+			width = $(window).width();
+			height =$(window).height();
 
-		calculateScale(width, 0.6 * height);
-		d3.select("#interactiveNetwork").attr("width", width + margin)
-			.attr("height", 0.6*height + margin);
-		d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
-		zoom()
-	});
+			calculateScale(width, 0.6 * height);
+			d3.select("#interactiveNetwork").attr("width", width + margin)
+				.attr("height", 0.6*height + margin);
+			d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
+			zoom()
+		});
 
 
 		//	showPickupAndDropoffByNbPickupsAndDropoffs();

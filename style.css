@@ -6,7 +6,9 @@ html, body, figure {
 }
 
 body  {
-    background-color: #cccccc;
+    /* wink-wink */
+    background-color: #D3D3D3;
+    font-family: "Montserrat";
 }
 
 
@@ -76,7 +78,7 @@ div.infoBox {
 }
 
 .track-inset {
-    stroke: #ddd;
+    stroke: #FFFFFF;
     stroke-width: 8px;
 }
 
