@@ -7,7 +7,6 @@ html, body, figure {
 
 body  {
     background-color: #cccccc;
-		   /*background-color: #000000;*/
 }
 
 
@@ -43,6 +42,13 @@ h4{
     border-width: 1px;
 }
 
+html, body, figure {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
 #blackLightningDiv{
     width: 100%;
     margin-top: 5px;
@@ -67,4 +73,32 @@ div.infoBox {
     border: 0px;
     border-radius: 8px;
     pointer-events: none;
+}
+
+.ticks {
+    font: 10px sans-serif;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+    stroke-linecap: round;
+}
+
+.track {
+    stroke: #000;
+    stroke-opacity: 0.3;
+    stroke-width: 10px;
+}
+
+.track-inset {
+    stroke: #ddd;
+    stroke-width: 8px;
+}
+
+.track-overlay {
+    pointer-events: stroke;
+    stroke-width: 50px;
+    stroke: transparent;
+    cursor: crosshair;
 }
