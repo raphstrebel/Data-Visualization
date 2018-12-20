@@ -1,3 +1,11 @@
+html, body, figure {
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+
+
 h1{
 	margin-bottom: 7px;
 }
@@ -16,11 +24,11 @@ h4{
 }
 
 body  {
-    /*background-color: #cccccc;*/
-    background-color: #000000;
+    background-color: #cccccc;
+    /*background-color: #000000;*/
 }
 
-.Pickup:hover {
+.Pickup:hover, .Dropoff:hover, .Legend:hover {
 	cursor: pointer;
 }
 
