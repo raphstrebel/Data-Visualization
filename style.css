@@ -1,3 +1,16 @@
+html, body, figure {
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	border: 0;
+}
+
+body  {
+    background-color: #cccccc;
+		   /*background-color: #000000;*/
+}
+
+
 h1{
 	margin-bottom: 7px;
 }
@@ -29,12 +42,9 @@ html, body, figure {
     background-color: #000000;
 }
 
-body  {
-    background-color: #cccccc;
-    /*background-color: #000000;*/
-}
 
-.Pickup:hover {
+
+.Pickup:hover, .Dropoff:hover, .Legend:hover {
 	cursor: pointer;
 }
 

@@ -12,6 +12,9 @@ const width = 1000;
 const height = 700;
 const margin = 5;
 const maxOccurence = 1103;
+const legendRadius = 5
+const radius = 5
+
 var svg;
 var div;
 var interactiveNetwork;
@@ -50,7 +53,11 @@ let brush = d3.brush().on("end", brushended),
 var slider;
 
 // Selection is important for the kind of stats we want to see
-let selection = "all";
+let selection = "appear";
+
+// Used to know when to load or not the nodes
+appeared = false
+
 
 // ----------------------------------------- Stats selection ----------------------------------------
 
@@ -220,6 +227,83 @@ function showAllPickupNodes() {
 				.duration(1000)
 				.delay(function(d,i){ return 25*i; })
 				.style("opacity", 1);
+}
+
+function drawControls(){
+	control = d3.select("#control")
+		.attr("width", width)
+		.attr("height", 15)
+
+		// legend for pickup
+	let legend_spacing = width/4;
+	let legend_text_extra_spacing = 6
+
+	control.append("circle")
+		.attr("id", "legend_pickup")
+		.attr("class", "Legend")
+		.attr("cx", margin + 0*legend_spacing)
+		.attr("cy", margin)
+		.attr("r", legendRadius)
+		.attr("fill", "red")
+		.on("click", handleLegendPickupClick);
+
+	control.append("text")
+		.attr("x", margin + 0*legend_spacing + radius)
+		.attr("y", margin + legend_text_extra_spacing)
+		.text("pickup")
+		.attr("class", "Legend")
+		.on("click", handleLegendPickupClick);
+
+	// legend for dropoff
+	control.append("circle")
+		.attr("id", "legend_dropoff")
+		.attr("cx", margin + 1*legend_spacing)
+		.attr("cy", margin)
+		.attr("r", legendRadius)
+		.attr("fill", "blue")
+		.attr("class", "Legend")
+		.on("click", handleLegendDropoffClick);
+
+
+	control.append("text")
+		.attr("x", margin + 1 *legend_spacing + radius)
+		.attr("y", margin + legend_text_extra_spacing)
+		.text("dropoff")
+		.attr("class", "Legend")
+		.on("click", handleLegendDropoffClick);
+
+	// legend for both pickup and dropoff
+	control.append("circle")
+		.attr("id", "legend_pickup_dropoff")
+		.attr("cx", margin + 2 *legend_spacing)
+		.attr("cy", margin)
+		.attr("r", legendRadius-1)
+		.style("stroke-width", 2)    // set the stroke width
+		.style("stroke", "red")      // set the line colour
+		.style("fill", "blue")
+		.attr("class","Legend")
+		.on("click", handleLegendPickupAndDropoffClick);
+
+	control.append("text")
+		.attr("x", margin + 2 *legend_spacing + radius)
+		.attr("y", margin + legend_text_extra_spacing)
+		.text("pickup and dropoff")
+		.attr("class","Legend")
+		.on("click", handleLegendPickupAndDropoffClick);
+
+	// legend for path
+	control.append("circle")
+		.attr("id", "legend_path")
+		.attr("cx", margin + 3* legend_spacing)
+		.attr("cy", margin )
+		.attr("r", legendRadius)
+		.attr("fill", "green");
+
+	control.append("text")
+		.attr("x", margin + 3* legend_spacing +radius )
+		.attr("y", margin + legend_text_extra_spacing)
+		.text("path node");
+		//.on("click", handleLegendPathClick);
 }
 
 function drawPaths(paths, nodeID) {
@@ -741,11 +825,26 @@ whenDocumentLoaded(() => {
 			.domain(y0)
 			.range([height, margin]);
 
-		// show pickup and dropoffs
-		//showAllDropoffNodes();
-		//showAllPickupNodes();
+		// show pickup and dropoffs, Only when they appear at the screen
+		// 
+		$(window).scroll(function() {
+   var hT = $('#scroll-to').offset().top,
+       hH = $('#scroll-to').outerHeight(),
+       wH = $(window).height(),
+       wS = $(this).scrollTop();
+   if ((wS > (hT+hH-wH) && (hT > wS) && (wS+wH > hT+hH)) && !appeared){
+		 showAllDropoffNodes();
+		 showAllPickupNodes();
+		 appeared = true
 
-		showPickupAndDropoffByNbPickupsAndDropoffs();
+   } else {
+
+		 //removeAll();
+   }
+	});
+
+
+	//	showPickupAndDropoffByNbPickupsAndDropoffs();
 
 		// for this one put background in black
 		showAllNodesByOccurrence();
@@ -754,74 +853,7 @@ whenDocumentLoaded(() => {
 		//showDropoffByNbDropoffs();
 
 	    // legend for pickup
-		let legend_spacing = 7;
-		let legendRadius = 5;
-
-		interactiveNetwork.append("circle")
-			.attr("id", "legend_pickup")
-			.attr("class", "Legend")
-			.attr("cx", margin)
-			.attr("cy", margin)
-			.attr("r", legendRadius)
-			.attr("fill", "red")
-			.on("click", handleLegendPickupClick);
-
-		interactiveNetwork.append("text")
-			.attr("x", margin + legendRadius + 3)
-			.attr("y", margin + legendRadius)
-			.text("pickup")
-			.attr("Class", "Legend")
-			.on("click", handleLegendPickupClick);
-
-		// legend for dropoff
-		interactiveNetwork.append("circle")
-			.attr("id", "legend_dropoff")
-			.attr("cx", margin)
-			.attr("cy", margin + 2* legendRadius + legend_spacing)
-			.attr("r", legendRadius)
-			.attr("fill", "blue")
-			.attr("class", "Legend")
-			.on("click", handleLegendDropoffClick);
-
-
-		interactiveNetwork.append("text")
-			.attr("x", margin + legendRadius + 3)
-			.attr("y", margin + 3* legendRadius + legend_spacing )
-			.text("dropoff")
-			.attr("class", "Legend")
-			.on("click", handleLegendDropoffClick);
-
-		// legend for both pickup and dropoff
-		interactiveNetwork.append("circle")
-			.attr("id", "legend_pickup_dropoff")
-			.attr("cx", margin)
-			.attr("cy", margin + 4* legendRadius + 2* legend_spacing)
-			.attr("r", legendRadius-1)
-			.style("stroke-width", 2)    // set the stroke width
-		  .style("stroke", "red")      // set the line colour
-		  .style("fill", "blue")
-			.attr("class","Legend")
-			.on("click", handleLegendPickupAndDropoffClick);
-
-		interactiveNetwork.append("text")
-			.attr("x", margin + legendRadius + 3)
-			.attr("y", margin + 5* legendRadius + 2*legend_spacing )
-			.text("pickup and dropoff")
-			.attr("class","Legend")
-			.on("click", handleLegendPickupAndDropoffClick);
-
-		// legend for path
-		interactiveNetwork.append("circle")
-			.attr("id", "legend_path")
-			.attr("cx", margin)
-			.attr("cy", margin + 6* legendRadius + 3*legend_spacing)
-			.attr("r", legendRadius)
-			.attr("fill", "green");
-
-		interactiveNetwork.append("text")
-			.attr("x", margin + legendRadius + 3)
-			.attr("y", margin + 7* legendRadius + 3*legend_spacing )
-			.text("path node")
+		drawControls()
 			//.on("click", handleLegendPathClick);
 		});
 
