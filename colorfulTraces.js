@@ -1,6 +1,29 @@
 
 // ----------------------------------------- Global Variables ----------------------------------------
 
+brushFinished = {
+	aInternal: false,
+	aListener: function(val) {},
+	set a(val) {
+			this.aInternal = val;
+			this.aListener(val);
+	},
+	get a() {
+		return this.aInternal;
+	},
+	registerListener: function(listener) {
+		this.aListener = listener;
+	}
+}
+
+brushFinished.registerListener(function(val) {
+	setTimeout(function() {
+		allNodesInBrushing = getNodesInBrush();
+		console.log("dropoffs in area : " + allNodesInBrushing);
+	console.log("number of dropoffs : " + allNodesInBrushing.size);
+	}, 1500);
+});
+
 // global constants
 const normalNodeRadius = 3;
 const pathNodeRadius = 2;
@@ -657,12 +680,16 @@ function brushended() {
 
 		centerInfoMap(lngL, lngR, latU, latD);
 		// [pickupNodesInBrushing, dropoffNodesInBrushing, pathNodesInBrushing]
-		allNodesInBrushing = getNodesInBrush(lngL, lngR, latU, latD);
+		//allNodesInBrushing = getNodesInBrush(lngL, lngR, latU, latD);
+		//console.log(allNodesInBrushing.Pickup);
+		//console.log(allNodesInBrushing.Dropoff);
+		//console.log(allNodesInBrushing.Path);
 
-		console.log("hey");
-		console.log(allNodesInBrushing.Pickup);
-		console.log(allNodesInBrushing.Dropoff);
-		console.log(allNodesInBrushing.Path);
+		//allNodesInBrushing = getNodesInBrush();
+
+		//console.log("dropoffs in area : " + allNodesInBrushing);
+		//console.log("number of dropoffs : " + allNodesInBrushing.size);
+		brushFinished.a = true;
 
 	} else {
 		infoMap.setView([46.5201349,6.6308389], 10);
@@ -694,65 +721,89 @@ function zoom() {
 			})
 }
 
-function getNodesInBrush(lngL, lngR, latU, latD) {
+function getNodesInBrush() {
 	pickupSelected = interactiveNetwork.selectAll(".Pickup")._groups[0];
 	dropoffSelected = interactiveNetwork.selectAll(".Dropoff")._groups[0];
 	pathSelected = interactiveNetwork.selectAll(".NodepathOnly")._groups[0];
 
-	console.log("lngL " +lngL);
+	/*console.log("lngL " +lngL);
 	console.log("lngR " +lngR);
 	console.log("latU " +latU);
-	console.log("latD " +latD);
+	console.log("latD " +latD);*/
 
 	// Get sets of selected nodes by class
 
 	pickupSelectedSet = new Set();
 
-	for(i = 0; i < pickupSelected.length; i++) {
+//	d3.select(3357408889).attr("transform")
+
+	/*for(i = 0; i < pickupSelected.length; i++) {
 		pickupSelectedSet.add(pickupSelected[i].__data__.pnode);
-	}
+	}*/
 
 	dropoffSelectedSet = new Set();
 
 	for(i = 0; i < dropoffSelected.length; i++) {
-		dropoffSelectedSet.add(dropoffSelected[i].__data__.dnode);
+		node_width = dropoffSelected[i].transform.animVal[0].matrix.e;
+		node_height = dropoffSelected[i].transform.animVal[0].matrix.f;
+
+		if(0 <= node_width && node_width <= width && 0 <= node_height && node_height <= height) {
+			dropoffSelectedSet.add(dropoffSelected[i]);
+		}
 	}
 
 	pathSelectedSet = new Set();
 
-	for(i = 0; i < pathSelected.length; i++) {
+	/*for(i = 0; i < pathSelected.length; i++) {
 		pathSelectedSet.add(pathSelected[i].__data__);
 	}
 
-	console.log(pickupSelectedSet);
-
+	pickupNodesInBrushing = getAllNodesInBounds(pickupSelectedSet);
+	console.log(pickupNodesInBrushing);*/
 	// Get nodes in brushing
-	pickupNodesInBrushing = getAllNodesInBounds(pickupSelectedSet, lngL, lngR, latU, latD);
+	//pickupNodesInBrushing = getAllNodesInBounds(pickupSelectedSet, lngL, lngR, latU, latD);
 	//dropoffNodesInBrushing = getAllNodesInBounds(dropoffSelectedSet, lngL, lngR, latU, latD);
 	//pathNodesInBrushing = getAllNodesInBounds(pathSelectedSet, lngL, lngR, latU, latD);
 
-	return {
-		Pickup: pickupNodesInBrushing,
+	return dropoffSelectedSet;//{
+		//Pickup: pickupNodesInBrushing,
 		//Dropoff: dropoffNodesInBrushing,
 		//Path: pathNodesInBrushing
-	}
+	//}
 }
 
-function getAllNodesInBounds(selectedSet, lngL, lngR, latU, latD) {
+//function getAllNodesInBounds(selectedSet, lngL, lngR, latU, latD) {
+function getAllNodesInBounds(selectedSet) {
 
-	nodesInBrushing = new Set();
+	nodesInBrushing = [];
 
 	selectedSet.forEach(function(node) {
-		lat = Number(osmToLatLng[node][0]);
-		lng = Number(osmToLatLng[node][1]);
+		//x1 = scaleX(Number(osmToLatLng[node][1]));
+		//y1 = scaleY(Number(osmToLatLng[node][0]));
 
-		console.log(node);
-		console.log("lat : " + lat);
-		console.log("lng : " + lng);
+		//if(node.)
 
-		if(lngL <= lng && lng <= lngR && latU <= lat && lat <= latD){
-			nodesInBrushing.add(node);
-		} 
+
+
+		/*if(s00 <= x1 && x1 <= s10 && s01 <= y1 && y1 <= s11) {
+			nodesInBrushing.push(node);
+		} else {
+			console.log(node);
+			console.log("x1 " + x1);
+			console.log("y1 " + y1);
+			console.log("s00 " + s00);
+			console.log("s10 " + s10);
+			console.log("s01 " + s01);
+			console.log("s11 " + s11);
+		}
+
+		/*if(lngL <= lng && lng <= lngR && latU <= lat && lat <= latD){
+			nodesInBrushing.push(node);
+		} else {
+			console.log(node);
+			console.log("lat : " + lat);
+			console.log("lng : " + lng);
+		}*/
 	}); 
 
 	return nodesInBrushing;
