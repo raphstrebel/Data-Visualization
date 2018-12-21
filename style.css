@@ -11,12 +11,21 @@ body  {
     font-family: "Montserrat";
 }
 
+/* Setting parameters for paragraphs and titles */
 p {
 	padding-left: 20%;
 	padding-right: 20%;
 	text-align: justify;
 	padding-bottom: 5%;
+}
 
+h1  {
+    padding-top:5%;
+    text-align: center;
+}
+
+h3 {
+	text-align: center;
 }
 
 h4 {
@@ -25,10 +34,7 @@ h4 {
     text-align: center;
 }
 
-h1 , h3 {
-	text-align: center;
-}
-
+/* The OSM map */
 #infoMap{
 	height: 25%;
     width: 25%;
@@ -37,6 +43,7 @@ h1 , h3 {
 		float: left;
 }
 
+/* The box diagram */
 #stats{
 	float: right;
 	padding-top: 10px;
@@ -47,6 +54,7 @@ h1 , h3 {
 	margin-left: 5%
 }
 
+/* Network of nodes shown according to occurrence */
 #blackLightningDiv{
     width: 100%;
     margin-top: 5px;
@@ -54,22 +62,23 @@ h1 , h3 {
     background-color: #000000;
 }
 
+/* Brushing parameters */
 .brush{
 	stroke: #fff;
 	fill-opacity: .125;
 	shape-rendering: crispEdges;
 }
 
-
+/* mouse cursors when hovering over clickable items */
 .Pickup:hover, .Dropoff:hover, .Legend:hover {
 	cursor: pointer;
 }
 
-div.infoBox {
+/* The tooltips */
+div.infoBox, div.pathInfoBox {
     position: absolute;
     text-align: center;
     width: 100px;
-    height: 30px;
     padding: 2px;
     font: 12px sans-serif;
     background: lightsteelblue;
@@ -78,17 +87,14 @@ div.infoBox {
     pointer-events: none;
 }
 
+/* when hovering over pickup and dropoffs */
+div.infoBox {
+    height: 30px;
+}
+
+/* when hovering over a path */
 div.pathInfoBox {
-    position: absolute;
-    text-align: center;
-    width: 100px;
     height: 20px;
-    padding: 2px;
-    font: 12px sans-serif;
-    background: lightsteelblue;
-    border: 0px;
-    border-radius: 8px;
-    pointer-events: none;
 }
 
 footer{
