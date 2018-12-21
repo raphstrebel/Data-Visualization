@@ -19,8 +19,8 @@ brushFinished = {
 brushFinished.registerListener(function(val) {
 	setTimeout(function() {
 		allNodesInBrushing = getNodesInBrush();
-		console.log("dropoffs in area : " + allNodesInBrushing);
-	console.log("number of dropoffs : " + allNodesInBrushing.size);
+		console.log("dropoffs in area : " + allNodesInBrushing.Dropoff);
+	console.log("number of dropoffs : " + allNodesInBrushing.Dropoff.length);
 	}, 1500);
 });
 
@@ -65,11 +65,11 @@ let brush = d3.brush().on("end", brushended);
 let idleTimeout;
 let	idleDelay = 350;
 
-// slider variables
+/* slider variables
 var slider;
 var handle;
 var label;
-var x;
+var x;*/
 
 // Selection is important for the kind of stats we want to see
 let selection = "appear";
@@ -80,6 +80,10 @@ appeared = false;
 
 let width = MIN_WIDTH;
 let height = MIN_HEIGHT;
+
+var linearBlackLighteningScale = d3.scalePow()
+	.domain([0, 40])
+   	.range(["#112231","#3C769D"]);
 
 
 
@@ -547,17 +551,6 @@ function showAllNodesByOccurrence() {
 
 	let allNodes = Object.keys(osmToOccurences);
 
-	var linearScale = d3.scalePow()
-		.domain([0, 40])
-   		.range(["#112231","#3C769D"]);
-
-	/*var linearScale = d3.scaleLinear()
-		.domain([0, 50])
-		.interpolate(d3.interpolateHcl)
-		//.range(['blue','red']);
-   		.range(["#112231","#3C769D"]);*/
-		//.range(['black', 'violet', 'violet', 'violet', 'blue', 'green', 'green', 'red', 'white']);
-
 	blackLightningNetwork.selectAll(".Node")
 		.data(allNodes)
 			.enter()
@@ -568,7 +561,7 @@ function showAllNodesByOccurrence() {
 					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
 				})
 				.attr("fill", function(d,i){
-					return linearScale(osmToOccurences[d]);
+					return linearBlackLighteningScale(osmToOccurences[d]);
 				})
 				.style("opacity", 1);
 
@@ -631,7 +624,7 @@ function initializeMap() {
 	infoMap = L.map('infoMap', {attributionControl: false})
 
 	// load a tile layer
-	L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		attribution: 'Tiles by <a href="http://mapc.org">MAPC</a>, Data by <a href="http://mass.gov/mgis">MassGIS</a>',
 		minZoom: 10,
 		maxZoom: 17
@@ -675,7 +668,15 @@ function showNodeOnMap(nodeID, nodeClass) {
 	infoMap.setView([nodeLat, nodeLng], 15);
 
 	// add marker for node on map
-	marker = L.marker([nodeLat, nodeLng]).addTo(infoMap);
+
+	var greenIcon = L.icon({
+	    iconUrl: 'Images/blackIcon.png',
+	    iconSize:     [10, 10], // size of the icon
+	    iconAnchor:   [10, 10], // point of the icon which will correspond to marker's location
+	    popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+	});
+
+	marker = L.marker([nodeLat, nodeLng], {icon: greenIcon}).addTo(infoMap);
 }
 
 function centerInfoMap(lngL, lngR, latU, latD) {
@@ -707,16 +708,7 @@ function brushended() {
 		[latU, latD] = [s[1][1], s[0][1]].map(scaleY.invert, scaleY);
 
 		centerInfoMap(lngL, lngR, latU, latD);
-		// [pickupNodesInBrushing, dropoffNodesInBrushing, pathNodesInBrushing]
-		//allNodesInBrushing = getNodesInBrush(lngL, lngR, latU, latD);
-		//console.log(allNodesInBrushing.Pickup);
-		//console.log(allNodesInBrushing.Dropoff);
-		//console.log(allNodesInBrushing.Path);
 
-		//allNodesInBrushing = getNodesInBrush();
-
-		//console.log("dropoffs in area : " + allNodesInBrushing);
-		//console.log("number of dropoffs : " + allNodesInBrushing.size);
 		brushFinished.a = true;
 
 	} else {
@@ -734,7 +726,6 @@ function zoom() {
   var t = interactiveNetwork.transition().duration(750);
   interactiveNetwork.selectAll("circle").transition(t)
 			.attr("transform", function(d){
-				//console.log(d)
 				if(!d){
 					return
 				}
@@ -743,8 +734,9 @@ function zoom() {
 				} else if (d.hasOwnProperty("pnode")) {
 					nodeId = d["pnode"]
 				} else {
-					nodeId = d
+					nodeId = d[0];
 				}
+				//console.log(nodeId);
 				return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
 			})
 }
@@ -754,99 +746,29 @@ function getNodesInBrush() {
 	dropoffSelected = interactiveNetwork.selectAll(".Dropoff")._groups[0];
 	pathSelected = interactiveNetwork.selectAll(".NodepathOnly")._groups[0];
 
-	/*console.log("lngL " +lngL);
-	console.log("lngR " +lngR);
-	console.log("latU " +latU);
-	console.log("latD " +latD);*/
+	return {
+		Pickup: getNodesInBounds(pickupSelected),
+		Dropoff: getNodesInBounds(dropoffSelected),
+		Path: getNodesInBounds(pathSelected)
+	}
+}
 
-	// Get sets of selected nodes by class
+function getNodesInBounds(selected) {
+	selectedSet = [];
 
-	pickupSelectedSet = new Set();
-
-//	d3.select(3357408889).attr("transform")
-
-	/*for(i = 0; i < pickupSelected.length; i++) {
-		pickupSelectedSet.add(pickupSelected[i].__data__.pnode);
-	}*/
-
-	dropoffSelectedSet = new Set();
-
-	for(i = 0; i < dropoffSelected.length; i++) {
-		node_width = dropoffSelected[i].transform.animVal[0].matrix.e;
-		node_height = dropoffSelected[i].transform.animVal[0].matrix.f;
+	for(i = 0; i < selected.length; i++) {
+		node_width = selected[i].transform.animVal[0].matrix.e;
+		node_height = selected[i].transform.animVal[0].matrix.f;
 
 		if(0 <= node_width && node_width <= width && 0 <= node_height && node_height <= height) {
-			dropoffSelectedSet.add(dropoffSelected[i]);
+			selectedSet.push(selected[i]);
 		}
 	}
 
-	pathSelectedSet = new Set();
-
-	/*for(i = 0; i < pathSelected.length; i++) {
-		pathSelectedSet.add(pathSelected[i].__data__);
-	}
-
-	pickupNodesInBrushing = getAllNodesInBounds(pickupSelectedSet);
-	console.log(pickupNodesInBrushing);*/
-	// Get nodes in brushing
-	//pickupNodesInBrushing = getAllNodesInBounds(pickupSelectedSet, lngL, lngR, latU, latD);
-	//dropoffNodesInBrushing = getAllNodesInBounds(dropoffSelectedSet, lngL, lngR, latU, latD);
-	//pathNodesInBrushing = getAllNodesInBounds(pathSelectedSet, lngL, lngR, latU, latD);
-
-	return dropoffSelectedSet;//{
-		//Pickup: pickupNodesInBrushing,
-		//Dropoff: dropoffNodesInBrushing,
-		//Path: pathNodesInBrushing
-	//}
+	return selectedSet;
 }
 
-//function getAllNodesInBounds(selectedSet, lngL, lngR, latU, latD) {
-function getAllNodesInBounds(selectedSet) {
-
-	nodesInBrushing = [];
-
-	selectedSet.forEach(function(node) {
-		//x1 = scaleX(Number(osmToLatLng[node][1]));
-		//y1 = scaleY(Number(osmToLatLng[node][0]));
-
-		//if(node.)
-
-
-
-		/*if(s00 <= x1 && x1 <= s10 && s01 <= y1 && y1 <= s11) {
-			nodesInBrushing.push(node);
-		} else {
-			console.log(node);
-			console.log("x1 " + x1);
-			console.log("y1 " + y1);
-			console.log("s00 " + s00);
-			console.log("s10 " + s10);
-			console.log("s01 " + s01);
-			console.log("s11 " + s11);
-		}
-
-		/*if(lngL <= lng && lng <= lngR && latU <= lat && lat <= latD){
-			nodesInBrushing.push(node);
-		} else {
-			console.log(node);
-			console.log("lat : " + lat);
-			console.log("lng : " + lng);
-		}*/
-	});
-
-	return nodesInBrushing;
-}
-
-/*function brushmove() {
-	var extent = brush.extent();
-
-	allNodes.classed("Selected", function(d) {
-		is_brushed = extent[0] <= d.index && d.index <= extent[1];
-		return is_brushed;
-	});
-}*/
-
-// ----------------------------------------- SLIDER -----------------------------------------
+/* ----------------------------------------- SLIDER -----------------------------------------
 
 function initializeSlider() {
 
@@ -854,12 +776,12 @@ function initializeSlider() {
 	let sliderHeight = 100;
 
 
-	x = d3.scaleLinear()
-    	.domain([0, 1])
-    	.range([0, 230])
+	x = d3.scalePow()
+    	.domain([0, 12])
+    	.range([0, sliderWidth])
     	.clamp(true);
 
-    slider = d3.select("#blackLightningSlider").attr("width", sliderWidth).attr("height", sliderHeight).append("g")
+    slider = d3.select("#blackLightningSlider").attr("width", sliderWidth+100).attr("height", sliderHeight).append("g")
 	    .attr("class", "slider")
 	    .attr("transform", "translate(" + margin+5 + "," + margin+5 + ")");
 	   // .attr("x", "0").attr("y", "0");
@@ -877,26 +799,23 @@ function initializeSlider() {
       	})
 	    .call(d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() { changeOpacity(x.invert(d3.event.x)); }));
+	        .on("start drag", function() { 
+	        	currentValue = d3.event.x;
+	        	//console.log(x.invert(currentValue));
+	        	handleSliderMoving(x.invert(d3.event.x)); 
+	        }));
 
     slider.insert("g", ".track-overlay")
 	    .attr("class", "ticks")
 	    .attr("transform", "translate(0," + 18 + ")")
 	  	.selectAll("text")
 	  	.data(x.ticks(10))
-	  	.enter().append("text")
-	    .attr("x", x)
-	    .attr("text-anchor", "middle")
-	    .text(function(d) { return d; })
-	    .call(d3.drag()
-	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() {
-	          currentValue = d3.event.x;
-	          console.log(x.invert(currentValue));
-	          //update(x.invert(currentValue)); 
-	        })
-	    );
-    //);
+	  	.enter()
+		  	.append("text")
+		    .attr("x", x)
+		    .attr("text-anchor", "middle")
+		    .text(function(d) { return d; })
+		    
 
 	handle = slider.insert("circle", ".track-overlay")
     	.attr("class", "handle")
@@ -905,23 +824,20 @@ function initializeSlider() {
     label = slider.append("text")  
 	    .attr("class", "label")
 	    .attr("text-anchor", "middle")
-	    .text("0")
 	    .attr("transform", "translate(0," + (-25) + ")")
 }
 
-function changeOpacity(h) {
-
-	var linearScale = d3.scalePow()
-		.domain([0, 40])
-   		.range(["#112231","#3C769D"]);
+function handleSliderMoving(h) {
 
 	handle.attr("cx", x(h))
-		.style("fill", linearScale(x(h)));
+		.style("fill", linearBlackLighteningScale(x(h)));
 
-	/*document.getElementById("blackLightningText").style.color = linearScale(x(h));*/
-
-	//blackLightningNetwork.selectAll(".Node").style("opacity", h);
+	label.attr("x", x(h)).text(formatText(h));
 }
+
+function formatText(h) {
+
+}*/
 
 // ----------------------------------------- ON DOCUMENT LOAD -----------------------------------------
 
@@ -960,7 +876,7 @@ whenDocumentLoaded(() => {
 	infoMap.setView([46.5201349,6.6308389], 10);
 
 	// initialize slider
-	initializeSlider();
+	//initializeSlider();
 
 	// Load the database
 	const database_promise = d3.csv("data/cleaned.csv").then( (data) => {
