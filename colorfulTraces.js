@@ -279,7 +279,7 @@ function handlePathMouseOut() {
 }
 
 function handleDropoffMouseClick(node) {
-	//changeStats("node", node);
+	selectedNode = null;
 	handleMouseOut();
 	handlePathMouseOut();
 	hide(".Pickup");
@@ -308,6 +308,7 @@ function handleDropoffMouseClick(node) {
 }
 
 function handlePickupMouseClick(node) {
+	selectedNode = null;
 	handleMouseOut();
 	handlePathMouseOut();
 	hide(".Pickup");
@@ -332,6 +333,7 @@ function handlePickupMouseClick(node) {
 }
 
 function handleLegendDropoffClick(){
+	selectedNode = null;
 	hide(".Pickup");
 	hide(".Path");
 	showAllDropoffNodes();
@@ -339,6 +341,7 @@ function handleLegendDropoffClick(){
 }
 
 function handleLegendPickupClick(){
+	selectedNode = null;
 	hide(".Dropoff");
 	hide(".Path");
 	showAllPickupNodes();
@@ -346,6 +349,7 @@ function handleLegendPickupClick(){
 }
 
 function handleLegendPickupAndDropoffClick(){
+	selectedNode = null;
 	hide(".Path");
 	showAllDropoffNodes();
 	showAllPickupNodes();
@@ -759,17 +763,12 @@ function initializeMap() {
 		maxZoom: 17
 	}).addTo(infoMap);
 
-	// disable all map features
-	//infoMap.dragging.disable();
+	// disable map features
 	infoMap.touchZoom.disable();
 	infoMap.doubleClickZoom.disable();
 	infoMap.scrollWheelZoom.disable();
 	infoMap.boxZoom.disable();
 	infoMap.keyboard.disable();
-	//infoMap.removeControl(infoMap.zoomControl);
-
-	// set cursor to default
-	//document.getElementById('infoMap').style.cursor='default';
 }
 
 function showNodeOnMap(nodeID, nodeClass) {
@@ -916,7 +915,7 @@ function resize(){
 	d3.select("#interactiveNetwork").attr("width", width + margin)
 		.attr("height", 0.6*height + margin);
 	d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
-	//showAllNodesByOccurrence()
+
 	d3.select("#control").attr("width", width + margin)
 }
 
@@ -1037,60 +1036,45 @@ whenDocumentLoaded(() => {
 		// for this one put background in black
 		showAllNodesByOccurrence();
 
-		//resize();
-
 		// show pickup and dropoffs, Only when they appear at the screen
 		// Adapted and retrieve from stackoverflow
 		$(window).scroll(function() {
-   let hT = $('#scroll-to').offset().top,
-       hH = $('#scroll-to').outerHeight(),
-       wH = $(window).height(),
-       wS = $(this).scrollTop();
-   if ((wS > (hT+hH-wH) && (hT > wS) && (wS+wH > hT+hH)) && !appeared){
-		 showAllDropoffNodes();
-		 showAllPickupNodes();
-		 appeared = true;
-		 allNodesInBrushing = getNodesInBrush()
-		 drawBarForBrushing(allNodesInBrushing)
-
-   }
-	});
+		    let hT = $('#scroll-to').offset().top,
+		       hH = $('#scroll-to').outerHeight(),
+		       wH = $(window).height(),
+		       wS = $(this).scrollTop();
+		    if ((wS > (hT+hH-wH) && (hT > wS) && (wS+wH > hT+hH)) && !appeared){
+				showAllDropoffNodes();
+			    showAllPickupNodes();
+				appeared = true;
+				allNodesInBrushing = getNodesInBrush();
+				drawBarForBrushing(allNodesInBrushing);
+		    }
+		});
 
 
 
 		// Handle rescaling the window
-	$(window).resize(function(){
-		resize();
-
+		$(window).resize(function(){
+			
+			resize();
 			interactiveNetwork.select(".brush").call(brush);
-
-
 			zoom();
 			drawControls();
 		});
 
-
-		//	showPickupAndDropoffByNbPickupsAndDropoffs();
-
-
-
-		//showPickupByNbPickups();
-		//showDropoffByNbDropoffs();
-
 	    // legend for pickup
 		drawControls()
-			//.on("click", handleLegendPathClick);
-		});
+	});
 
-		interactiveNetwork.selectAll(".domain")
-		    .style("display", "none");
+	// start networks
+	interactiveNetwork.selectAll(".domain")
+	    .style("display", "none");
 
-		blackLightningNetworkSVG.selectAll(".domain")
-		    .style("display", "none");
+	blackLightningNetworkSVG.selectAll(".domain")
+	    .style("display", "none");
 
-		interactiveNetwork.append("g")
-			.attr("class", "brush")
-			.call(brush);
-
-
+	interactiveNetwork.append("g")
+		.attr("class", "brush")
+		.call(brush);
 });
