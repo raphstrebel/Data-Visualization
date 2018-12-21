@@ -10,42 +10,35 @@
 </head>
 
 <body>
-
     <h1>Colorful Traces</h1>
     <h4>by Alexandre Dumur and Raphael Strebel</h4>
-
     <h3>Data presentation</h3>
     <p> In this section we show a brief global description of the data.  <br>
       The data was provided by the Smood affiliation and consists of a set of points which are shown according to their geographical locations. The points can be either pickup locations, dropoff locations or points on a road from a pickup to a dropoff. We also have access to the time a driver needed for any path. <br>
       There are almost 12'600 nodes shown in the networks below, 42 of which correspond to pickups and 525 are dropoffs. There are also 2000 roads in the data, although some of them overlap eachother. <br>
       Our goal is focus on a visualisation of this geographical data without using the distraction of a map in the background. We attempt to get as much as we can out of the information provided, and show that it can be nice to watch and interesting to interact with.
     </p>
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> f2938775cef753655f3feeed6a199ddb28233fab
     <h3>Black Lightning</h3>
-
     <p>The first network you see is a representation of all nodes of the database, colored according to their occurrences. The coloring is done using a linear scale from a dark blue (#112231) for 0 occurrences going through a lighter blue (#3C769D) when the number of occurrences reaches 40 and to white linearly.</p>
-
     <div id="blackLightningDiv">
         <svg id="blackLightningNetwork"></svg>
     </div>
-
     <div style="padding-bottom: 5%;">
     </div>
-
     <h3>Interactive Network</h3>
-
     <p>Below you can see the interactive network we built. You can click on the red pickup nodes to see all the paths that start at this location. You can also click on a dropoff node to display all paths to this point. The paths shown in green appear according to the real time data, where one second in the visualization corresponds to one minute for the driver. On the side you can also see some interesting information about the node you chose, for example it's location on a map.</p>
-
     <div id="iNet">
     <div id="canvas">
     <svg id="control"></svg>
     <svg id="interactiveNetwork"></svg>
     <span id="scroll-to"></span>
-
 </div>
-
     <div id="sideBoard">
         <h3>Informations</h3>
         <svg id="stats"></svg>
@@ -61,9 +54,6 @@
   Alexandre Dumur
 
 </footer>
-
-
-
     <!-- Importing the .js script at the end -->
     <script src = "lib/leaflet.js"></script>
     <script type="text/javascript" src="lib/jquery-1.7.1.min.js"></script>
