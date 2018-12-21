@@ -879,13 +879,15 @@ function getNodesInBrush() {
 
 function getNodesInBounds(selected) {
 	let selectedSet = new Set();
-	let w = $(window).width();
-	let h = w *0.6;
+	let extraSafeMargin = 5
+	console.log("In getNodesInBounds : "+ margin)
+	let w = $(window).width() + margin;
+	let h = $(window).height() *0.6 + margin ;
 	for(i = 0; i < selected.length; i++) {
 		node_width = selected[i].transform.animVal[0].matrix.e;
 		node_height = selected[i].transform.animVal[0].matrix.f;
 
-		if(0 <= node_width && node_width <= w && 0 <= node_height && node_height <= h) {
+		if(- extraSafeMargin <= node_width && node_width <= w + extraSafeMargin && - extraSafeMargin <= node_height && node_height <= h + extraSafeMargin ) {
 			if(!selectedSet.has(selected[i])) {
 				selectedSet.add(selected[i]);
 			}
@@ -966,7 +968,20 @@ function formatText(h) {
 
 }*/
 
+function resize(){
+	width = $(window).width();
+	height =$(window).height();
+	calculateScale(width, 0.6 * height);
+	d3.select("#interactiveNetwork").attr("width", width + margin)
+		.attr("height", 0.6*height + margin);
+	d3.select("#blackLightningNetwork").attr("width", width + margin).attr("height", height)
+	d3.select("#control").attr("width", width + margin)
+}
+
+
 // ----------------------------------------- ON DOCUMENT LOAD -----------------------------------------
+
+
 
 whenDocumentLoaded(() => {
 
@@ -974,16 +989,15 @@ whenDocumentLoaded(() => {
 	width = $(window).width()
 	height =$(window).height()
 
-	heightInteracitveNetwork = 0.6 * width
+	heightInteracitveNetwork = 0.6 *height
 
 	blackLightningNetwork = d3.select("#blackLightningNetwork")
-		.attr("width", width)
-		.attr("height", height)
+		.attr("width", width + margin)
+		.attr("height", height + margin)
 		.attr("fill", "black");
 
-	interactiveNetwork = d3.select("#interactiveNetwork")
-		.attr("width", width )
-		.attr("height", heightInteracitveNetwork );
+	interactiveNetwork =	d3.select("#interactiveNetwork").attr("width", width + margin)
+			.attr("height", heightInteracitveNetwork + margin);
 
 
 
@@ -1078,10 +1092,14 @@ whenDocumentLoaded(() => {
 		y0 = [minLat, maxLat]
 
 		// Define the scale
-		calculateScale(width, heightInteracitveNetwork)
+		calculateScale(width , heightInteracitveNetwork)
 
+
+
+		//resize();
 
 		// show pickup and dropoffs, Only when they appear at the screen
+		// Adapted and retrieve from stackoverflow
 		$(window).scroll(function() {
    let hT = $('#scroll-to').offset().top,
        hH = $('#scroll-to').outerHeight(),
@@ -1101,18 +1119,13 @@ whenDocumentLoaded(() => {
 
 		// Handle rescaling the window
 	$(window).resize(function(){
-		width = $(window).width();
-		height =$(window).height();
-		calculateScale(width, 0.6 * height);
-		d3.select("#interactiveNetwork").attr("width", width + margin)
-			.attr("height", 0.6*height + margin);
-		d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
-		d3.select("#control").attr("width", width)
+		resize();
 
 			interactiveNetwork.select(".brush").call(brush);
 
-			zoom()
-			drawControls()
+
+			zoom();
+			drawControls();
 		});
 
 
