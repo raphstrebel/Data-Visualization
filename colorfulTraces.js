@@ -19,8 +19,8 @@ brushFinished = {
 brushFinished.registerListener(function(val) {
 	setTimeout(function() {
 		allNodesInBrushing = getNodesInBrush();
-		console.log("dropoffs in area : " + allNodesInBrushing.Dropoff);
-	console.log("number of dropoffs : " + allNodesInBrushing.Dropoff.length);
+		//console.log("dropoffs in area : " + allNodesInBrushing.Dropoff);
+	//console.log("number of dropoffs : " + allNodesInBrushing.Dropoff.length);
 	drawBar(allNodesInBrushing);
 }, 1500);
 });
