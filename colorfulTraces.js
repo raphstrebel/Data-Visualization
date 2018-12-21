@@ -81,7 +81,7 @@ appeared = false;
 let width = MIN_WIDTH;
 let height = MIN_HEIGHT;
 
-var linearBlackLighteningScale = d3.scalePow()
+var linearBlackLighteningScale = d3.scaleLinear()
 	.domain([0, 40])
    	.range(["#112231","#3C769D"]);
 

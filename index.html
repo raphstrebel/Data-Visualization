@@ -16,19 +16,20 @@
         <br>
 
         <h3>Data presentation</h3>
-        <p>
-          Here you can see a brief global description of our data.
-        </p>
+        <p> In this section we show a brief global description of the data.</p>
+        <p> There is a total of x nodes.</p>
+        <br>
         <h3>Black Lightning</h3>
 
-    <p>The first network you see is a representation of all nodes of the database, colored according to their occurrences. To see them increase their opacity.</p>
+    <p>The first network you see is a representation of all nodes of the database, colored according to their occurrences. The coloring is done according to a linear scale from  "#112231" to "#3C769D".</p>
+
     <div id="blackLightningDiv">
         <svg id="blackLightningNetwork"></svg>
     </div>
 
     <h3>Interactive Network</h3>
 
-    <p>Below you can see the crows jewel of our visualization, the interactive network. You can click on the nodes to display paths from a selected pickup node (red) or to the selected dropoff node (blue). On the side you can also see some interesting information about the node you chose, for example it's location on a map.</p>
+    <p>Below you can see the interactive network we built. You can click on the red pickup nodes to see all the paths that start at this location. You can also click on a dropoff node to display all paths to this point. The paths shown in green appear according to the real time data, where one second in the visualization corresponds to one minute for the driver. On the side you can also see some interesting information about the node you chose, for example it's location on a map.</p>
 
     <div id="iNet">
     <div id="canvas">
