@@ -21,8 +21,17 @@ brushFinished.registerListener(function(val) {
 		allNodesInBrushing = getNodesInBrush();
 		console.log("dropoffs in area : " + allNodesInBrushing.Dropoff);
 	console.log("number of dropoffs : " + allNodesInBrushing.Dropoff.length);
-	}, 1500);
+	drawBar(allNodesInBrushing);
+}, 1500);
 });
+
+function drawBar(allNodesInBrushing){
+	let w = $(window).width()
+	pickupScale = d3.scaleLinear().domain([0 , occurencesPickup]).range([0, w/2])
+	dropoffScale = d3.scaleLinear().domain([0 , occurencesDropoff]).range(0)
+
+
+}
 
 // global constants
 const normalNodeRadius = 3;
@@ -30,6 +39,8 @@ const pathNodeRadius = 2;
 
 const margin = 5;
 const maxOccurence = 1103;
+const occurencesPickup = 42;
+const occurencesDropoff = 525;
 const legendRadius = 5;
 const radius = 5;
 const MIN_WIDTH = 500;
@@ -54,6 +65,9 @@ var dropoffToNbDropoffs;
 // network scales
 var scaleX;
 var scaleY;
+
+// Stats on pickup and dropoff scales
+let pickupScale;
 
 // map variables
 var infoMap;
@@ -81,7 +95,7 @@ appeared = false;
 let width = MIN_WIDTH;
 let height = MIN_HEIGHT;
 
-var linearBlackLighteningScale = d3.scaleLinear()
+var linearBlackLighteningScale = d3.scalePow()
 	.domain([0, 40])
    	.range(["#112231","#3C769D"]);
 
@@ -762,18 +776,18 @@ function getNodesInBrush() {
 }
 
 function getNodesInBounds(selected) {
-	selectedSet = [];
-
+	let selectedSet = [];
+	let w = $(window).width();
+	let h = w *0.6;
 	for(i = 0; i < selected.length; i++) {
 		node_width = selected[i].transform.animVal[0].matrix.e;
 		node_height = selected[i].transform.animVal[0].matrix.f;
 
-		if(0 <= node_width && node_width <= width && 0 <= node_height && node_height <= height) {
-			if(!selectedSet.includes(selected[i])) {
-				selectedSet.push(selected[i]);
-			}
+		if(0 <= node_width && node_width <= w && 0 <= node_height && node_height <= h) {
+			selectedSet.push(selected[i]);
 		}
 	}
+
 	return selectedSet;
 }
 
