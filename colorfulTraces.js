@@ -48,10 +48,13 @@ const MIN_HEIGHT = 400;
 
 // visualization tools and networks
 var svg;
-var div;
 var interactiveNetwork;
 var blackLightningNetwork;
 var blackLightningNetworkSVG;
+
+// tooltip
+var tooltip;
+var pathTooltip;
 
 // database and useful dictionaries
 var database;
@@ -120,8 +123,8 @@ function handleDropoffMouseOver(node) {
 		nodeID = node;
 	}
 
-	div.transition().style("opacity", .9);
-	div.html(" occurences : " + osmToOccurences[nodeID] + "<br>" + " dropoffs : " + dropoffToNbDropoffs[nodeID])
+	tooltip.transition().style("opacity", .9);
+	tooltip.html(" occurences : " + osmToOccurences[nodeID] + "<br>" + " dropoffs : " + dropoffToNbDropoffs[nodeID])
 		.style("left", (d3.event.pageX) + "px")
 		.style("top", (d3.event.pageY - 28) + "px");
 }
@@ -136,15 +139,22 @@ function handlePickupMouseOver(node) {
 		nodeID = node;
 	}
 
-	div.transition().style("opacity", .9);
-	div.html(" occurences : " + osmToOccurences[nodeID] + "<br>" + " pickups : " + pickupToNbPickups[nodeID])
+	tooltip.transition().style("opacity", .9);
+	tooltip.html(" occurences : " + osmToOccurences[nodeID] + "<br>" + " pickups : " + pickupToNbPickups[nodeID])
 		.style("left", (d3.event.pageX) + "px")
 		.style("top", (d3.event.pageY - 28) + "px");
 }
 
 // make info box dissapear (slowly)
 function handleMouseOut() {
-	div.transition()
+	tooltip.transition()
+	.duration(500)
+	.style("opacity", 0);
+}
+
+// make info box dissapear (slowly)
+function handlePathMouseOut() {
+	pathTooltip.transition()
 	.duration(500)
 	.style("opacity", 0);
 }
@@ -152,6 +162,7 @@ function handleMouseOut() {
 function handleDropoffMouseClick(node) {
 	//changeStats("node", node);
 	handleMouseOut();
+	handlePathMouseOut();
 	hide(".Pickup");
 	hide(".Dropoff");
 	hide(".Path");
@@ -176,6 +187,7 @@ function handleDropoffMouseClick(node) {
 
 function handlePickupMouseClick(node) {
 	handleMouseOut();
+	handlePathMouseOut();
 	hide(".Pickup");
 	hide(".Dropoff");
 	hide(".Path");
@@ -352,16 +364,27 @@ function drawControls(){
 		//.on("click", handleLegendPathClick);
 }
 
+function handlePathMouseOver(d) {
+
+	pathTooltip.transition().style("opacity", .9);
+	pathTooltip.html(" time : " + d[1])
+		.style("left", (d3.event.pageX) + "px")
+		.style("top", (d3.event.pageY - 28) + "px");
+
+}
+
 
 // This Methode draw the path
 function drawPaths(paths, nodeID) {
+
+	var highlightler = "black";
 
 	interactiveNetwork.selectAll(".Path")
 		.data(paths)
 		.enter()
 		.append("g")
 			.attr("class", "Path")
-			.on("mouseover", doNothing)
+			//.on("mouseover", highlightPath)
 			.selectAll(".Nodepath")
 			.data(function(d){
 
@@ -428,14 +451,15 @@ function drawPaths(paths, nodeID) {
 					} else if(d[2] == "Dropoff") {
 						return handleDropoffMouseOver(d[0]);
 					} else {
-						return doNothing();
+						return handlePathMouseOver(d);
+						//return doNothing();
 					}
 				})
 				.on("mouseout", (d) => {
 					if (d[2] == "Pickup" || d[2] == "Dropoff"){
 						return handleMouseOut();
 					} else {
-						return doNothing();
+						return handlePathMouseOut();
 					}
 				})
 				.on("click", function(d){
@@ -444,7 +468,7 @@ function drawPaths(paths, nodeID) {
 					} else if (d[2] == "Dropoff"){
 						return handleDropoffMouseClick(d[0]);
 					} else {
-						return doNothing();
+						return handlePathMouseOut();
 					}
 				})
 				.attr("transform", function(d) {
@@ -889,8 +913,12 @@ whenDocumentLoaded(() => {
 					.attr("width", width + margin)
 					.attr("height", height);
 
-	div = d3.select("body").append("div")
+	tooltip = d3.select("body").append("div")
 			.attr("class", "infoBox")
+			.style("opacity", 0);
+
+	pathTooltip= d3.select("body").append("div")
+			.attr("class", "pathInfoBox")
 			.style("opacity", 0);
 
 
@@ -1024,4 +1052,5 @@ whenDocumentLoaded(() => {
 		interactiveNetwork.append("g")
 			.attr("class", "brush")
 			.call(brush);
+
 });
