@@ -1,5 +1,9 @@
 # Data-Visualization Project
-This project was done for the Data Visualization course at EPFL, and bases itself on a dataset provided by Smood.
+This work is done by two EPFL students, Raphael Strebel and Alexandre Dumur, both master students in Communication Systems. The project is in the field of Data Visualization a course given by Dr. Kirell Benzi, whose goal is to teach us to make interactive data visualization systems at EPFL.
+The Smood affiliation provides us with a dataset containing, amongst others, GPS traces in the region of Lausanne. The goal of the project is to find and visualize patterns or global trends in the dataset. The reason we chose this task is because we find it interesting to work with networks in a visualization. Networks provide many features to invent and explore, and the only limit is our imagination.
+
+We keep a weekly journal that describes the step-by-step evolution of our project, along with issues encountered and screenshots. 
+
 
 @Author: Raphael Strebel, Alexandre Dumur
 
