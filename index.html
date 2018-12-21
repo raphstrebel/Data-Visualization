@@ -15,9 +15,9 @@
     <h4>by Alexandre Dumur and Raphael Strebel</h4>
 
     <h3>Data presentation</h3>
-    <p> In this section we show a brief global description of the data.  <br> 
-      The data was provided by the Smood affiliation and consists of a set of points which are shown according to their geographical locations. The points can be either pickup locations, dropoff locations or points on a road from a pickup to a dropoff. We also have access to the time a driver needed for any path. <br> 
-      There are almost 12'600 nodes shown in the networks below, 42 of which correspond to pickups and 525 are dropoffs. There are also 2000 roads in the data, although some of them overlap eachother. <br> 
+    <p> In this section we show a brief global description of the data.  <br>
+      The data was provided by the Smood affiliation and consists of a set of points which are shown according to their geographical locations. The points can be either pickup locations, dropoff locations or points on a road from a pickup to a dropoff. We also have access to the time a driver needed for any path. <br>
+      There are almost 12'600 nodes shown in the networks below, 42 of which correspond to pickups and 525 are dropoffs. There are also 2000 roads in the data, although some of them overlap eachother. <br>
       Our goal is focus on a visualisation of this geographical data without using the distraction of a map in the background. We attempt to get as much as we can out of the information provided, and show that it can be nice to watch and interesting to interact with.
     </p>
 
@@ -45,13 +45,22 @@
 </div>
 
     <div id="sideBoard">
-        <h3>Interesting facts</h3>
+        <h3>informations</h3>
+        <svg id="stats"></svg>
         <div id="infoMap"></div>
     </div>
 </div>
 
-    <h3>Stats</h3>
-    <svg id="stats"></svg>
+<footer>
+  EPFL - Data Viz
+  <br />
+  Raphael Strebel
+  &
+  Alexandre Dumur
+
+</footer>
+
+
 
     <!-- Importing the .js script at the end -->
     <script src = "lib/leaflet.js"></script>
@@ -60,5 +69,6 @@
     <script src="lib/d3.min.js"></script>
     <script src="lib/lodash.js"></script>
   	<script src="colorfulTraces.js"></script>
+
 </body>
 </html>

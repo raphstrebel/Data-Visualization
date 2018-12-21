@@ -21,15 +21,75 @@ brushFinished.registerListener(function(val) {
 		allNodesInBrushing = getNodesInBrush();
 		console.log("dropoffs in area : " + allNodesInBrushing.Dropoff);
 	console.log("number of dropoffs : " + allNodesInBrushing.Dropoff.length);
-	drawBar(allNodesInBrushing);
+	drawBarForBrushing(allNodesInBrushing);
 }, 1500);
 });
 
-function drawBar(allNodesInBrushing){
-	let w = $(window).width()
-	pickupScale = d3.scaleLinear().domain([0 , occurencesPickup]).range([0, w/2])
-	dropoffScale = d3.scaleLinear().domain([0 , occurencesDropoff]).range(0)
+function drawBarForBrushing(allNodesInBrushing){
+	let w = $(window).width()*0.5;
+	let h =  w/3;
+	let mL = mT = mB =  5;
+	let mR = 20;
 
+	pickupScale = d3.scaleLinear().domain([0 , occurencesPickup]).range([0, w - 2 *mR - mL]);
+	dropoffScale = d3.scaleLinear().domain([0 , occurencesDropoff]).range([0, w - 2* mR - mL]);
+
+	nbPickup = allNodesInBrushing.Pickup.length;
+	nbDropoff = allNodesInBrushing.Dropoff.length;
+
+
+
+	let barWidth = h/4
+	let spacing = barWidth/3
+	// Used for redrawing
+	d3.select(".bar").remove()
+
+	let xAxis = d3.scaleLinear()
+						.domain([0, 100])
+						.range([mL, w - 2 *mR])
+
+	let yAxis = d3.scaleLinear()
+											//.ticks(0)
+											//.ticksFormat("")
+											.range([0, _.floor(2*barWidth+ spacing)])
+
+	bars = d3.select("#stats").attr("width",w).attr("height", h)
+		.append("g").attr("class", "bar");
+
+	// Red bar
+	// plot
+	bars.append("rect")
+		.attr("width", pickupScale(nbPickup))
+		.attr("height", barWidth).attr("fill", "red")
+		.attr("transform", "translate( "+ mL+" , 0)");
+
+	// show nb occurences
+	bars.append("text").attr("x",  pickupScale(nbPickup) + 5).attr("y", h/8).text(nbPickup)
+		.attr("transform", "translate( "+ mL+" , 0)");
+
+	console.log(h)
+	// Blue bar
+	bars.append("rect")
+		.attr("width", dropoffScale(nbDropoff))
+		.attr("height", barWidth).attr("fill", "blue").attr("y", barWidth + spacing)
+		.attr("transform", "translate( "+ mL+" , 0)");
+
+	bars.append("text").attr("x",  dropoffScale(nbDropoff) + 5)
+		.attr("y", _.ceil(barWidth + spacing + barWidth/2))
+		.text(nbDropoff).attr("transform", "translate( "+ mL+" , 0)");
+
+	// add the x Axis
+bars.append("g")
+		.attr("transform", "translate(0,"+_.floor(2*barWidth+ spacing)+")")
+		.call(d3.axisBottom(xAxis));
+
+		// add the y Axis
+		bars.append("g")
+				//.attr("transform", "rotate(90)")
+				.attr("transform", "translate("+mL+", 0)")
+				.call(d3.axisLeft(yAxis).ticks(0));
+
+		// Global Text
 
 }
 
