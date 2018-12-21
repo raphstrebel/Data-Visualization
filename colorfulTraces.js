@@ -675,6 +675,15 @@ function showAllNodesByOccurrence() {
 
 	let allNodes = Object.keys(osmToOccurences);
 
+	width = $(window).width()
+	height = $(window).height()
+
+	let lightningScaleX = d3.scaleLinear().domain(x0)
+		.range([margin, width]);
+
+	let lightningScaleY = d3.scaleLinear().domain(y0)
+		.range([height, margin]);
+
 	blackLightningNetwork.selectAll(".Node")
 		.data(allNodes)
 			.enter()
@@ -682,7 +691,7 @@ function showAllNodesByOccurrence() {
 				.attr("class", "Node")
 				.attr("r" , pathNodeRadius)
 				.attr("transform", function(d) {
-					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
+					return "translate("+lightningScaleX(Number(osmToLatLng[d][1]))+","+ lightningScaleY (Number(osmToLatLng[d][0]))+")";
 				})
 				.attr("fill", function(d,i){
 					return linearBlackLighteningScale(osmToOccurences[d]);
@@ -974,7 +983,8 @@ function resize(){
 	calculateScale(width, 0.6 * height);
 	d3.select("#interactiveNetwork").attr("width", width + margin)
 		.attr("height", 0.6*height + margin);
-	d3.select("#blackLightningNetwork").attr("width", width + margin).attr("height", height)
+	d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
+	showAllNodesByOccurrence()
 	d3.select("#control").attr("width", width + margin)
 }
 
@@ -992,8 +1002,8 @@ whenDocumentLoaded(() => {
 	heightInteracitveNetwork = 0.6 *height
 
 	blackLightningNetwork = d3.select("#blackLightningNetwork")
-		.attr("width", width + margin)
-		.attr("height", height + margin)
+		.attr("width", width )
+		.attr("height", height)
 		.attr("fill", "black");
 
 	interactiveNetwork =	d3.select("#interactiveNetwork").attr("width", width + margin)
@@ -1094,7 +1104,8 @@ whenDocumentLoaded(() => {
 		// Define the scale
 		calculateScale(width , heightInteracitveNetwork)
 
-
+		// for this one put background in black
+		showAllNodesByOccurrence();
 
 		//resize();
 
@@ -1131,8 +1142,7 @@ whenDocumentLoaded(() => {
 
 		//	showPickupAndDropoffByNbPickupsAndDropoffs();
 
-		// for this one put background in black
-		showAllNodesByOccurrence();
+
 
 		//showPickupByNbPickups();
 		//showDropoffByNbDropoffs();
