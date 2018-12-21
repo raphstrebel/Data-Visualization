@@ -21,17 +21,11 @@ p {
 
 h4 {
     padding-bottom: 5%;
+    font-style: italic;
+    text-align: center;
 }
-
 
 h1 , h3 {
-	text-align: center;
-}
-
-
-h4{
-	margin-top: 5px;
-	font-style: italic;
 	text-align: center;
 }
 
@@ -82,33 +76,6 @@ div.infoBox {
     border: 0px;
     border-radius: 8px;
     pointer-events: none;
-}
-
-.ticks {
-    font: 10px sans-serif;
-}
-
-.track,
-.track-inset,
-.track-overlay {
-    stroke-linecap: round;
-}
-
-.track {
-    stroke: #000;
-    stroke-opacity: 0.3;
-    stroke-width: 10px;
-}
-
-.track-inset {
-    stroke: #FFFFFF;
-    stroke-width: 8px;
-}
-
-.track-overlay {
-    pointer-events: stroke;
-    stroke-width: 50px;
-    stroke: transparent;
 }
 
 footer{
