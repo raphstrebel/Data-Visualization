@@ -1,6 +1,82 @@
 
 // ----------------------------------------- Global Variables ----------------------------------------
 
+
+// global constants
+const normalNodeRadius = 3;
+const pathNodeRadius = 2;
+
+const margin = 5;
+const maxOccurence = 1103;
+const occurencesPickup = 42;
+const occurencesDropoff = 525;
+const legendRadius = 5;
+const radius = 5;
+const MIN_WIDTH = 500;
+const MIN_HEIGHT = 400;
+
+// visualization tools and networks
+let svg;
+let interactiveNetwork;
+let blackLightningNetwork;
+let blackLightningNetworkSVG;
+
+// tooltip
+let tooltip;
+let pathTooltip;
+
+// database and useful dictionaries
+let database;
+let osmToLatLng;
+let osmToOccurences;
+let pickupNodes;
+let dropoffNodes;
+let pickupToNbPickups;
+let dropoffToNbDropoffs;
+
+// network scales
+let scaleX;
+let scaleY;
+
+// Stats on pickup and dropoff scales
+let pickupScale;
+
+// map letiables
+let infoMap;
+let marker;
+
+// Brushing
+let brush = d3.brush().on("end", brushended);
+
+let idleTimeout;
+let	idleDelay = 350;
+
+let allNodesInArea = {
+	Dropoff :occurencesDropoff,
+	Pickup : occurencesPickup
+};
+
+
+// Selection is important for the kind of stats we want to see
+let selection = "appear";
+
+// Used to know when to load or not the nodes
+appeared = false;
+
+
+let width = MIN_WIDTH;
+let height = MIN_HEIGHT;
+
+var linearBlackLighteningScale = d3.scalePow()
+	.domain([0, 40])
+   	.range(["#112231","#3C769D"]);
+
+
+
+// --------------------------------- Information bar chart----------------------------------------
+
+
+// Set listener for once the brush is finished
 brushFinished = {
 	aInternal: false,
 	aListener: function(val) {},
@@ -16,6 +92,7 @@ brushFinished = {
 	}
 }
 
+
 brushFinished.registerListener(function(val) {
 	setTimeout(function() {
 		allNodesInBrushing = getNodesInBrush();
@@ -25,6 +102,7 @@ brushFinished.registerListener(function(val) {
 }, 1500);
 });
 
+// Draw the bar chart
 function drawBarForBrushing(allNodesInBrushing){
 	let w = $(window).width()*0.5;
 	let h =  w/3;
@@ -94,89 +172,6 @@ bars.append("g")
 	bars.append("text").attr("transform", "translate("+0+","+_.floor(h -19)+")")
 	.text("Percentage of selected nodes by category (with # locations)")
 	.attr("font-size", _.floor(w * 10/320))
-}
-
-// global constants
-const normalNodeRadius = 3;
-const pathNodeRadius = 2;
-
-const margin = 5;
-const maxOccurence = 1103;
-const occurencesPickup = 42;
-const occurencesDropoff = 525;
-const legendRadius = 5;
-const radius = 5;
-const MIN_WIDTH = 500;
-const MIN_HEIGHT = 400;
-
-// visualization tools and networks
-var svg;
-var interactiveNetwork;
-var blackLightningNetwork;
-var blackLightningNetworkSVG;
-
-// tooltip
-var tooltip;
-var pathTooltip;
-
-// database and useful dictionaries
-var database;
-var osmToLatLng;
-var osmToOccurences;
-var pickupNodes;
-var dropoffNodes;
-var pickupToNbPickups;
-var dropoffToNbDropoffs;
-
-// network scales
-var scaleX;
-var scaleY;
-
-// Stats on pickup and dropoff scales
-let pickupScale;
-
-// map variables
-var infoMap;
-var marker;
-
-// Brushing
-let brush = d3.brush().on("end", brushended);
-
-let idleTimeout;
-let	idleDelay = 350;
-
-let allNodesInArea = {
-	Dropoff :occurencesDropoff,
-	Pickup : occurencesPickup
-};
-
-/* slider variables
-var slider;
-var handle;
-var label;
-var x;*/
-
-// Selection is important for the kind of stats we want to see
-let selection = "appear";
-
-// Used to know when to load or not the nodes
-appeared = false;
-
-
-let width = MIN_WIDTH;
-let height = MIN_HEIGHT;
-
-var linearBlackLighteningScale = d3.scalePow()
-	.domain([0, 40])
-   	.range(["#112231","#3C769D"]);
-
-
-
-// ----------------------------------------- Stats selection ----------------------------------------
-
-function changeStats(mode, elem){
-	console.log(mode)
-	console.log(elem)
 }
 
 // ----------------------------------------- MOUSE HANDLERS -----------------------------------------
@@ -869,7 +864,7 @@ function zoom() {
 				} else {
 					nodeId = d[0];
 				}
-				//console.log(nodeId);
+
 				return "translate("+scaleX(Number(osmToLatLng[nodeId][1]))+","+ scaleY(Number(osmToLatLng[nodeId][0]))+")";
 			})
 }
@@ -886,10 +881,13 @@ function getNodesInBrush() {
 	}
 }
 
+// Return nodes lying in the brush Area
 function getNodesInBounds(selected) {
 	let selectedSet = new Set();
+
+	// Safety margin
 	let extraSafeMargin = 5
-	console.log("In getNodesInBounds : "+ margin)
+
 	let w = $(window).width() + margin;
 	let h = $(window).height() *0.6 + margin ;
 	for(i = 0; i < selected.length; i++) {
@@ -906,76 +904,8 @@ function getNodesInBounds(selected) {
 	return selectedSet;
 }
 
-/* ----------------------------------------- SLIDER -----------------------------------------
-
-function initializeSlider() {
-
-	let sliderWidth = 300;
-	let sliderHeight = 100;
 
 
-	x = d3.scalePow()
-    	.domain([0, 12])
-    	.range([0, sliderWidth])
-    	.clamp(true);
-
-    slider = d3.select("#blackLightningSlider").attr("width", sliderWidth+100).attr("height", sliderHeight).append("g")
-	    .attr("class", "slider")
-	    .attr("transform", "translate(" + margin+5 + "," + margin+5 + ")");
-	   // .attr("x", "0").attr("y", "0");
-
-	slider.append("line")
-	    .attr("class", "track")
-	    .attr("x1", x.range()[0])
-	    .attr("x2", x.range()[1])
-	 	.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-	    .attr("class", "track-inset")
-	  	.select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
-	    .attr("class", "track-overlay")
-	    .on("mouseover", function(d) {
-       		d3.select(this).style("cursor", "pointer");
-      	})
-	    .call(d3.drag()
-	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() {
-	        	currentValue = d3.event.x;
-	        	//console.log(x.invert(currentValue));
-	        	handleSliderMoving(x.invert(d3.event.x));
-	        }));
-
-    slider.insert("g", ".track-overlay")
-	    .attr("class", "ticks")
-	    .attr("transform", "translate(0," + 18 + ")")
-	  	.selectAll("text")
-	  	.data(x.ticks(10))
-	  	.enter()
-		  	.append("text")
-		    .attr("x", x)
-		    .attr("text-anchor", "middle")
-		    .text(function(d) { return d; })
-
-
-	handle = slider.insert("circle", ".track-overlay")
-    	.attr("class", "handle")
-    	.attr("r", 9);
-
-    label = slider.append("text")
-	    .attr("class", "label")
-	    .attr("text-anchor", "middle")
-	    .attr("transform", "translate(0," + (-25) + ")")
-}
-
-function handleSliderMoving(h) {
-
-	handle.attr("cx", x(h))
-		.style("fill", linearBlackLighteningScale(x(h)));
-
-	label.attr("x", x(h)).text(formatText(h));
-}
-
-function formatText(h) {
-
-}*/
 
 function resize(){
 	width = $(window).width();
@@ -1025,14 +955,12 @@ whenDocumentLoaded(() => {
 			.attr("class", "pathInfoBox")
 			.style("opacity", 0);
 
-// perecentage of o
+
 
     // initalize map centered on lausanne region
 	initializeMap();
 	infoMap.setView([46.5201349,6.6308389], 10);
 
-	// initialize slider
-	//initializeSlider();
 
 	// Load the database
 	const database_promise = d3.csv("data/cleaned.csv").then( (data) => {
