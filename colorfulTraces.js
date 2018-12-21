@@ -438,8 +438,7 @@ function drawPaths(paths, nodeID) {
 				})
 				.style("opacity", 0)
 				.transition()
-				//.duration(1000*Math.log(paths.length))
-				.delay((d,i) => 12*i)
+				.delay((d,i) => i*getNumberFromTime(d[1]))
 				.style("opacity", 1);
 
 	d3.selection.prototype.moveUp = function() {
@@ -451,6 +450,14 @@ function drawPaths(paths, nodeID) {
 	interactiveNetwork.selectAll(".Dropoff").moveUp();
 	interactiveNetwork.selectAll(".Pickup").moveUp();
 	interactiveNetwork.selectAll(".Selected").moveUp();
+}
+
+// 1 sec in the viz is 1min in real life
+function getNumberFromTime(t) {
+	attributes = t.split(":");
+	minutes = Number(attributes[0]);
+	seconds = Number(attributes[1]);
+	return minutes+seconds/60;
 }
 
 function showPickupAndDropoffByNbPickupsAndDropoffs() {
