@@ -268,19 +268,20 @@ function drawControls(){
 		// legend for pickup
 	let legend_spacing = width/4;
 	let legend_text_extra_spacing = 6
+	let marginTop = 6;
 
 	control.append("circle")
 		.attr("id", "legend_pickup")
 		.attr("class", "Legend")
-		.attr("cx", 2*margin + 0*legend_spacing)
-		.attr("cy", margin)
+		.attr("cx", 2*margin + 0*legend_spacing +4)
+		.attr("cy", marginTop)
 		.attr("r", legendRadius)
 		.attr("fill", "red")
 		.on("click", handleLegendPickupClick);
 
 	control.append("text")
-		.attr("x", 2*margin + 0*legend_spacing + radius)
-		.attr("y", margin + legend_text_extra_spacing)
+		.attr("x", 2*margin + 0*legend_spacing + radius + 4)
+		.attr("y", marginTop + legend_text_extra_spacing )
 		.text("pickup")
 		.attr("class", "Legend")
 		.on("click", handleLegendPickupClick);
@@ -289,7 +290,7 @@ function drawControls(){
 	control.append("circle")
 		.attr("id", "legend_dropoff")
 		.attr("cx", margin + 1*legend_spacing)
-		.attr("cy", margin)
+		.attr("cy", marginTop)
 		.attr("r", legendRadius)
 		.attr("fill", "blue")
 		.attr("class", "Legend")
@@ -298,7 +299,7 @@ function drawControls(){
 
 	control.append("text")
 		.attr("x", margin + 1 *legend_spacing + radius)
-		.attr("y", margin + legend_text_extra_spacing)
+		.attr("y", marginTop + legend_text_extra_spacing)
 		.text("dropoff")
 		.attr("class", "Legend")
 		.on("click", handleLegendDropoffClick);
@@ -306,8 +307,8 @@ function drawControls(){
 	// legend for both pickup and dropoff
 	control.append("circle")
 		.attr("id", "legend_pickup_dropoff")
-		.attr("cx", margin + 2 *legend_spacing)
-		.attr("cy", margin)
+		.attr("cx", margin + 2 *legend_spacing - 5)
+		.attr("cy", marginTop)
 		.attr("r", legendRadius-1)
 		.style("stroke-width", 2)    // set the stroke width
 		.style("stroke", "red")      // set the line colour
@@ -316,8 +317,8 @@ function drawControls(){
 		.on("click", handleLegendPickupAndDropoffClick);
 
 	control.append("text")
-		.attr("x", margin + 2 *legend_spacing + radius)
-		.attr("y", margin + legend_text_extra_spacing)
+		.attr("x", margin + 2 *legend_spacing + radius - 5)
+		.attr("y", marginTop + legend_text_extra_spacing)
 		.text("pickup and dropoff")
 		.attr("class","Legend")
 		.on("click", handleLegendPickupAndDropoffClick);
@@ -325,14 +326,14 @@ function drawControls(){
 	// legend for path
 	control.append("circle")
 		.attr("id", "legend_path")
-		.attr("cx", margin + 3* legend_spacing)
-		.attr("cy", margin )
+		.attr("cx",width - 100)
+		.attr("cy", marginTop )
 		.attr("r", legendRadius)
 		.attr("fill", "green");
 
 	control.append("text")
-		.attr("x", margin + 3* legend_spacing +radius )
-		.attr("y", margin + legend_text_extra_spacing)
+		.attr("x",   width - 100 +radius)
+		.attr("y", marginTop + legend_text_extra_spacing )
 		.text("path node");
 		//.on("click", handleLegendPathClick);
 }
@@ -806,10 +807,10 @@ function initializeSlider() {
       	})
 	    .call(d3.drag()
 	        .on("start.interrupt", function() { slider.interrupt(); })
-	        .on("start drag", function() { 
+	        .on("start drag", function() {
 	        	currentValue = d3.event.x;
 	        	//console.log(x.invert(currentValue));
-	        	handleSliderMoving(x.invert(d3.event.x)); 
+	        	handleSliderMoving(x.invert(d3.event.x));
 	        }));
 
     slider.insert("g", ".track-overlay")
@@ -822,13 +823,13 @@ function initializeSlider() {
 		    .attr("x", x)
 		    .attr("text-anchor", "middle")
 		    .text(function(d) { return d; })
-		    
+
 
 	handle = slider.insert("circle", ".track-overlay")
     	.attr("class", "handle")
     	.attr("r", 9);
 
-    label = slider.append("text")  
+    label = slider.append("text")
 	    .attr("class", "label")
 	    .attr("text-anchor", "middle")
 	    .attr("transform", "translate(0," + (-25) + ")")
