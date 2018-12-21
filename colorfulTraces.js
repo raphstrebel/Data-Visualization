@@ -68,6 +68,7 @@ let	idleDelay = 350;
 // slider variables
 var slider;
 var handle;
+var label;
 var x;
 
 // Selection is important for the kind of stats we want to see
@@ -523,11 +524,15 @@ function showAllNodesByOccurrence() {
 
 	let allNodes = Object.keys(osmToOccurences);
 
-	var linearScale = d3.scaleLinear()
+	var linearScale = d3.scalePow()
+		.domain([0, 40])
+   		.range(["#112231","#3C769D"]);
+
+	/*var linearScale = d3.scaleLinear()
 		.domain([0, 50])
 		.interpolate(d3.interpolateHcl)
 		//.range(['blue','red']);
-   		.range(["#112231","#3C769D"]);
+   		.range(["#112231","#3C769D"]);*/
 		//.range(['black', 'violet', 'violet', 'violet', 'blue', 'green', 'green', 'red', 'white']);
 
 	blackLightningNetwork.selectAll(".Node")
@@ -542,7 +547,7 @@ function showAllNodesByOccurrence() {
 				.attr("fill", function(d,i){
 					return linearScale(osmToOccurences[d]);
 				})
-				.style("opacity", 0);
+				.style("opacity", 1);
 
 }
 
@@ -859,11 +864,26 @@ function initializeSlider() {
 	  	.enter().append("text")
 	    .attr("x", x)
 	    .attr("text-anchor", "middle")
-	    .text(function(d) { return d; });
+	    .text(function(d) { return d; })
+	    .call(d3.drag()
+	        .on("start.interrupt", function() { slider.interrupt(); })
+	        .on("start drag", function() {
+	          currentValue = d3.event.x;
+	          console.log(x.invert(currentValue));
+	          //update(x.invert(currentValue)); 
+	        })
+	    );
+    //);
 
 	handle = slider.insert("circle", ".track-overlay")
     	.attr("class", "handle")
     	.attr("r", 9);
+
+    label = slider.append("text")  
+	    .attr("class", "label")
+	    .attr("text-anchor", "middle")
+	    .text("0")
+	    .attr("transform", "translate(0," + (-25) + ")")
 }
 
 function changeOpacity(h) {
@@ -877,7 +897,7 @@ function changeOpacity(h) {
 
 	/*document.getElementById("blackLightningText").style.color = linearScale(x(h));*/
 
-	blackLightningNetwork.selectAll(".Node").style("opacity", h);
+	//blackLightningNetwork.selectAll(".Node").style("opacity", h);
 }
 
 // ----------------------------------------- ON DOCUMENT LOAD -----------------------------------------
