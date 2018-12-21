@@ -866,7 +866,9 @@ function getNodesInBounds(selected) {
 		node_height = selected[i].transform.animVal[0].matrix.f;
 
 		if(0 <= node_width && node_width <= w && 0 <= node_height && node_height <= h) {
-			selectedSet.push(selected[i]);
+			if(!selectedSet.includes(node)) {
+				selectedSet.push(selected[i]);
+			}	
 		}
 	}
 
@@ -1110,5 +1112,6 @@ whenDocumentLoaded(() => {
 		interactiveNetwork.append("g")
 			.attr("class", "brush")
 			.call(brush);
+
 
 });
