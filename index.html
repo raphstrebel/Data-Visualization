@@ -11,21 +11,25 @@
 
 <body>
 
-        <h1>Colorful Traces</h1>
-        <h4>by Alexandre Dumur and Raphael Strebel</h4>
-        <br>
+    <h1>Colorful Traces</h1>
+    <h4>by Alexandre Dumur and Raphael Strebel</h4>
 
-        <h3>Data presentation</h3>
-        <p> In this section we show a brief global description of the data.</p>
-        <p> The data was provided by the Smood affiliation and consists of a set of points which are shown according to their geographical location. The points can be either pickup locations, dropoff locations or points on a road from a pickup to a dropoff. 
-         There is a total of x nodes.</p>
-        <br>
-        <h3>Black Lightning</h3>
+    <h3>Data presentation</h3>
+    <p> In this section we show a brief global description of the data.  <br> 
+      The data was provided by the Smood affiliation and consists of a set of points which are shown according to their geographical locations. The points can be either pickup locations, dropoff locations or points on a road from a pickup to a dropoff. We also have access to the time a driver needed for any path. <br> 
+      There are almost 12'600 nodes shown in the networks below, 42 of which correspond to pickups and 525 are dropoffs. There are also 2000 roads in the data, although some of them overlap eachother. <br> 
+      Our goal is focus on a visualisation of this geographical data without using the distraction of a map in the background. We attempt to get as much as we can out of the information provided, and show that it can be nice to watch and interesting to interact with.
+    </p>
 
-    <p>The first network you see is a representation of all nodes of the database, colored according to their occurrences. The coloring is done according to a linear scale from  "#112231" to "#3C769D".</p>
+    <h3>Black Lightning</h3>
+
+    <p>The first network you see is a representation of all nodes of the database, colored according to their occurrences. The coloring is done using a linear scale from a dark blue (#112231) going through a lighter blue (#3C769D) and to white when the number of occurrences is higher than 40.</p>
 
     <div id="blackLightningDiv">
         <svg id="blackLightningNetwork"></svg>
+    </div>
+
+    <div style="padding-bottom: 5%;">
     </div>
 
     <h3>Interactive Network</h3>
@@ -36,7 +40,6 @@
     <div id="canvas">
     <svg id="control"></svg>
     <svg id="interactiveNetwork"></svg>
-    <!-- Importing the .js script at the end -->
     <span id="scroll-to"></span>
 
 </div>
