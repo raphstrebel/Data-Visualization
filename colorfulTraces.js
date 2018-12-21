@@ -31,10 +31,13 @@ function drawBarForBrushing(allNodesInBrushing){
 	let mL = mT = mB =  5;
 	let mR = 20;
 
+
+
+	console.log(allNodesInBrushing)
 	pickupScale = d3.scaleLinear().domain([0 , occurencesPickup]).range([0, w - 2 *mR - mL]);
 	dropoffScale = d3.scaleLinear().domain([0 , occurencesDropoff]).range([0, w - 2* mR - mL]);
 
-	nbPickup = allNodesInBrushing.Pickup.length;
+	nbPickup =allNodesInBrushing.Pickup.length;
 	nbDropoff = allNodesInBrushing.Dropoff.length;
 
 
@@ -142,6 +145,11 @@ let brush = d3.brush().on("end", brushended);
 let idleTimeout;
 let	idleDelay = 350;
 
+let allNodesInArea = {
+	Dropoff :occurencesDropoff,
+	Pickup : occurencesPickup
+};
+
 /* slider variables
 var slider;
 var handle;
@@ -243,6 +251,8 @@ function handleDropoffMouseClick(node) {
 	// Show node on map (in information section)
 	showNodeOnMap(nodeID, "Dropoff");
 
+	brushFinished.a = true;
+
 }
 
 function handlePickupMouseClick(node) {
@@ -265,24 +275,29 @@ function handlePickupMouseClick(node) {
 
 	// Show node on map (in information section)
 	showNodeOnMap(nodeID, "Pickup");
+
+	brushFinished.a = true;
 }
 
 function handleLegendDropoffClick(){
 	hide(".Pickup");
 	hide(".Path");
 	showAllDropoffNodes();
+	brushFinished.a = true;
 }
 
 function handleLegendPickupClick(){
 	hide(".Dropoff");
 	hide(".Path");
 	showAllPickupNodes();
+	brushFinished.a = true;
 }
 
 function handleLegendPickupAndDropoffClick(){
 	hide(".Path");
 	showAllDropoffNodes();
 	showAllPickupNodes();
+	brushFinished.a = true;
 }
 
 // ----------------------------------------- SHOWING POINTS -----------------------------------------
@@ -451,10 +466,8 @@ function drawPaths(paths, nodeID) {
 				let ids = JSON.parse(d["road"])
 				let ts = Array(ids.length).fill(d["t"])
 
-				categories = _.map(ids , (x, i) => {
-					if (i == 0){
-						return "Selected";
-					} else if (pickupNodesSet.has(x)) {
+				categories = _.map(ids , (x) => {
+					if (pickupNodesSet.has(x)) {
 						return "Pickup"
 					} else if (dropOffNodesSet.has(x)) {
 						return "Dropoff";
@@ -479,7 +492,7 @@ function drawPaths(paths, nodeID) {
 					let category = d[2];
 
 					// Selected node in black
-					if (category == "Selected"){
+					if ((d[0] == nodeID)){
 						return "black"
 					} else if (category == "Pickup"){
 						return "red";
@@ -490,12 +503,12 @@ function drawPaths(paths, nodeID) {
 					}
 				})
 				.attr("class", (d) => d[2] )
-				.attr("id", function(d){return d[0];})
+				.attr("id", (d) => d[0])
 				.attr("r", function(d){
 
 					let category = d[2];
 
-					if (d.id == nodeID){
+					if (d[0] == nodeID){
 						return pathNodeRadius + 1
 					} else if (category == "Pickup" || category == "Dropoff"){
 						return normalNodeRadius;
@@ -545,7 +558,7 @@ function drawPaths(paths, nodeID) {
 
 	interactiveNetwork.selectAll(".Dropoff").moveUp();
 	interactiveNetwork.selectAll(".Pickup").moveUp();
-	interactiveNetwork.selectAll(".Selected").moveUp();
+	//interactiveNetwork.selectAll("#"+nodeID).moveUp();
 }
 
 // 1 sec in the viz is 1min in real life
@@ -813,11 +826,11 @@ function brushended() {
 
 		centerInfoMap(lngL, lngR, latU, latD);
 
-		brushFinished.a = true;
 
 	} else {
 		infoMap.setView([46.5201349,6.6308389], 10);
 	}
+	brushFinished.a = true;
 }
 
 
@@ -981,6 +994,7 @@ whenDocumentLoaded(() => {
 			.attr("class", "pathInfoBox")
 			.style("opacity", 0);
 
+// perecentage of o
 
     // initalize map centered on lausanne region
 	initializeMap();
@@ -1062,7 +1076,7 @@ whenDocumentLoaded(() => {
 
 		// show pickup and dropoffs, Only when they appear at the screen
 		$(window).scroll(function() {
-   var hT = $('#scroll-to').offset().top,
+   let hT = $('#scroll-to').offset().top,
        hH = $('#scroll-to').outerHeight(),
        wH = $(window).height(),
        wS = $(this).scrollTop();
@@ -1070,18 +1084,23 @@ whenDocumentLoaded(() => {
 		 showAllDropoffNodes();
 		 showAllPickupNodes();
 		 appeared = true;
+		 allNodesInBrushing = getNodesInBrush()
+		 drawBarForBrushing(allNodesInBrushing)
+
    }
 	});
 
+
+
 		// Handle rescaling the window
-		$(window).resize(function(){
-			width = $(window).width();
-			height =$(window).height();
-			calculateScale(width, 0.6 * height);
-			d3.select("#interactiveNetwork").attr("width", width + margin)
-				.attr("height", 0.6*height + margin);
-			d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
-			d3.select("#control").attr("width", width)
+	$(window).resize(function(){
+		width = $(window).width();
+		height =$(window).height();
+		calculateScale(width, 0.6 * height);
+		d3.select("#interactiveNetwork").attr("width", width + margin)
+			.attr("height", 0.6*height + margin);
+		d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
+		d3.select("#control").attr("width", width)
 
 			interactiveNetwork.select(".brush").call(brush);
 
