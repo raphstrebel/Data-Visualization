@@ -769,10 +769,11 @@ function getNodesInBounds(selected) {
 		node_height = selected[i].transform.animVal[0].matrix.f;
 
 		if(0 <= node_width && node_width <= width && 0 <= node_height && node_height <= height) {
-			selectedSet.push(selected[i]);
+			if(!selectedSet.includes(selected[i])) {
+				selectedSet.push(selected[i]);
+			}
 		}
 	}
-
 	return selectedSet;
 }
 
