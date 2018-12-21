@@ -332,6 +332,8 @@ function drawControls(){
 		//.on("click", handleLegendPathClick);
 }
 
+
+// This Methode draw the path
 function drawPaths(paths, nodeID) {
 
 	interactiveNetwork.selectAll(".Path")
@@ -342,75 +344,96 @@ function drawPaths(paths, nodeID) {
 			.on("mouseover", doNothing)
 			.selectAll(".Nodepath")
 			.data(function(d){
-				return JSON.parse(d["road"]);
+
+				// Using loDash to save time and to not parse many time the db
+
+				let ids = JSON.parse(d["road"])
+				let ts = Array(ids.length).fill(d["t"])
+
+				categories = _.map(ids , (x, i) => {
+					if (i == 0){
+						return "Selected";
+					} else if (pickupNodesSet.has(x)) {
+						return "Pickup"
+					} else if (dropOffNodesSet.has(x)) {
+						return "Dropoff";
+					} else {
+						return "NodepathOnly";
+					}
+
+				});
+
+				// d[0] = id
+				// d[1] = time
+				// d[2] = category
+
+
+				return _.zip(ids, ts, categories)
+
+
 			})
 			.enter()
 			.append("circle")
-				.attr("fill", function(d){
+				.attr("fill", (d) => {
+					let category = d[2];
+
 					// Selected node in black
-					if (d == nodeID){
+					if (category == "Selected"){
 						return "black"
-					} else if (pickupNodesSet.has(d)){
+					} else if (category == "Pickup"){
 						return "red";
-					} else if (dropOffNodesSet.has(d)){
+					} else if (category == "Dropoff"){
 						return "blue";
 					} else {
 						return "green";
 					}
 				})
-				.attr("class", function(d){
-					if (d == nodeID){
-						return "Selected"
-					} else if (pickupNodesSet.has(d)){
-						return "Pickup";
-					} else if (dropOffNodesSet.has(d)){
-						return "Dropoff";
-					} else {
-						return "NodepathOnly";
-					}
-				})
-				.attr("id", function(d){return d;})
+				.attr("class", (d) => d[2] )
+				.attr("id", function(d){return d[0];})
 				.attr("r", function(d){
-					if (d == nodeID){
+
+					let category = d[2];
+
+					if (d.id == nodeID){
 						return pathNodeRadius + 1
-					} else if (pickupNodesSet.has(d) || dropOffNodesSet.has(d)){
+					} else if (category == "Pickup" || category == "Dropoff"){
 						return normalNodeRadius;
 					} else {
 						return pathNodeRadius;
 					}
 				})
-				.on("mouseover", function(d){
-					if (pickupNodesSet.has(d)) {
-						return handlePickupMouseOver(d);
-					} else if(dropOffNodesSet.has(d)) {
-						return handleDropoffMouseOver(d);
+				.on("mouseover", (d) => {
+					if (d[2] == "Pickup") {
+						return handlePickupMouseOver(d[0]);
+					} else if(d[2] == "Dropoff") {
+						return handleDropoffMouseOver(d[0]);
 					} else {
 						return doNothing();
 					}
 				})
-				.on("mouseout", function(d){
-					if (pickupNodesSet.has(d) || dropOffNodesSet.has(d)){
+				.on("mouseout", (d) => {
+					if (d[2] == "Pickup" || d[2] == "Dropoff"){
 						return handleMouseOut();
 					} else {
 						return doNothing();
 					}
 				})
 				.on("click", function(d){
-					if (pickupNodesSet.has(d)){
-						return handlePickupMouseClick(d);
-					} else if (dropOffNodesSet.has(d)){
-						return handleDropoffMouseClick(d);
+					if (d[2] == "Pickup"){
+						return handlePickupMouseClick(d[0]);
+					} else if (d[2] == "Dropoff"){
+						return handleDropoffMouseClick(d[0]);
 					} else {
 						return doNothing();
 					}
 				})
 				.attr("transform", function(d) {
-					return "translate("+scaleX(Number(osmToLatLng[d][1]))+","+ scaleY(Number(osmToLatLng[d][0]))+")";
+					return "translate("+scaleX(Number(osmToLatLng[d[0]][1]))+","+ scaleY(Number(osmToLatLng[d[0]][0]))+")";
 				})
 				.style("opacity", 0)
 				.transition()
 				//.duration(1000*Math.log(paths.length))
-				.delay(function(d,i){ return 12*i; })
+				.delay((d,i) => 12*i)
 				.style("opacity", 1);
 
 	d3.selection.prototype.moveUp = function() {
@@ -804,14 +827,14 @@ function getAllNodesInBounds(selectedSet) {
 			console.log("lat : " + lat);
 			console.log("lng : " + lng);
 		}*/
-	}); 
+	});
 
 	return nodesInBrushing;
 }
 
 /*function brushmove() {
 	var extent = brush.extent();
-	
+
 	allNodes.classed("Selected", function(d) {
 		is_brushed = extent[0] <= d.index && d.index <= extent[1];
 		return is_brushed;
