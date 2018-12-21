@@ -37,8 +37,8 @@ function drawBarForBrushing(allNodesInBrushing){
 	pickupScale = d3.scaleLinear().domain([0 , occurencesPickup]).range([0, w - 2 *mR - mL]);
 	dropoffScale = d3.scaleLinear().domain([0 , occurencesDropoff]).range([0, w - 2* mR - mL]);
 
-	nbPickup =allNodesInBrushing.Pickup.length;
-	nbDropoff = allNodesInBrushing.Dropoff.length;
+	nbPickup =allNodesInBrushing.Pickup.size;
+	nbDropoff = allNodesInBrushing.Dropoff.size;
 
 
 
@@ -502,7 +502,14 @@ function drawPaths(paths, nodeID) {
 						return "green";
 					}
 				})
-				.attr("class", (d) => d[2] )
+				.attr("class", (d) => {
+					if (d[0] == nodeID){
+						return d[2]+ " " + "Selected";
+					}
+					else{
+						return d[2];
+					}
+					} )
 				.attr("id", (d) => d[0])
 				.attr("r", function(d){
 
@@ -558,7 +565,7 @@ function drawPaths(paths, nodeID) {
 
 	interactiveNetwork.selectAll(".Dropoff").moveUp();
 	interactiveNetwork.selectAll(".Pickup").moveUp();
-	//interactiveNetwork.selectAll("#"+nodeID).moveUp();
+	interactiveNetwork.selectAll(".Selected").moveUp();
 }
 
 // 1 sec in the viz is 1min in real life
@@ -871,7 +878,7 @@ function getNodesInBrush() {
 }
 
 function getNodesInBounds(selected) {
-	let selectedSet = [];
+	let selectedSet = new Set();
 	let w = $(window).width();
 	let h = w *0.6;
 	for(i = 0; i < selected.length; i++) {
@@ -879,9 +886,9 @@ function getNodesInBounds(selected) {
 		node_height = selected[i].transform.animVal[0].matrix.f;
 
 		if(0 <= node_width && node_width <= w && 0 <= node_height && node_height <= h) {
-			if(!selectedSet.includes(node)) {
-				selectedSet.push(selected[i]);
-			}	
+			if(!selectedSet.has(selected[i])) {
+				selectedSet.add(selected[i]);
+			}
 		}
 	}
 
