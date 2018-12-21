@@ -16,21 +16,21 @@ p {
 	padding-right: 20%;
 	text-align: justify;
 	padding-bottom: 5%;
+
+}
+
+h4 {
+    padding-bottom: 5%;
 }
 
 
-h1 {  
-    margin-top: 5px;
+h1 , h3 {
 	text-align: center;
-}
-
-h3 {  
-    text-align: center;
 }
 
 
 h4{
-    padding-bottom: 5%;
+	margin-top: 5px;
 	font-style: italic;
 	text-align: center;
 }
@@ -40,6 +40,17 @@ h4{
     width: 25%;
     border-style: solid;
     border-width: 1px;
+		float: left;
+}
+
+#stats{
+	float: right;
+	padding-top: 5%;
+}
+
+#sideBoard{
+	padding-bottom: 30%;
+	margin-left: 5%
 }
 
 #blackLightningDiv{
@@ -64,31 +75,15 @@ div.infoBox {
     position: absolute;
     text-align: left;
     width: 100px;
-    height: 30px;
+    height: 40px;
     padding: 2px;
     font: 12px sans-serif;
     background: lightsteelblue;
     border: 0px;
     border-radius: 8px;
     pointer-events: none;
-    text-align: center;
 }
 
-div.pathInfoBox {
-    position: absolute;
-    text-align: left;
-    width: 100px;
-    height: 20px;
-    padding: 2px;
-    font: 12px sans-serif;
-    background: lightsteelblue;
-    border: 0px;
-    border-radius: 8px;
-    pointer-events: none;
-    text-align: center;
-}
-
-/*
 .ticks {
     font: 10px sans-serif;
 }
@@ -115,15 +110,9 @@ div.pathInfoBox {
     stroke-width: 50px;
     stroke: transparent;
 }
-*/
 
-.axis {
-    font: 10px sans-serif;
-}
-
-.axis path,
-.axis line {
-    fill: none;
-    stroke: #000;
-    shape-rendering: crispEdges;
+footer{
+	font-family: monospace;
+	font-size: 10px;
+	text-align: right;
 }
