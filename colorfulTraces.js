@@ -19,9 +19,57 @@ brushFinished = {
 brushFinished.registerListener(function(val) {
 	setTimeout(function() {
 		allNodesInBrushing = getNodesInBrush();
-		console.log("dropoffs in area : " + allNodesInBrushing.Dropoff);
-	console.log("number of dropoffs : " + allNodesInBrushing.Dropoff.length);
-	drawBarForBrushing(allNodesInBrushing);
+
+		selectedPickupNodes = new Set();
+
+		for(let i of allNodesInBrushing.Pickup) { 
+
+			test = i; 
+			n = test.__data__[0];
+
+			if(n == null) {
+				n1 = test.__data__.pnode;
+				if(n1 != null && !selectedPickupNodes.has(n1) && n1 != selectedNode) {
+					selectedPickupNodes.add(n1);
+				}
+			} else {
+				if(!selectedPickupNodes.has(n) && n != selectedNode) {
+					selectedPickupNodes.add(n);
+				}
+			}
+		}
+
+		if(selectedNode != null && selectedCat === "Pickup") {
+			selectedPickupNodes.add(selectedNode);
+		}
+
+		selectedDropoffNodes = new Set();
+
+		for(let i of allNodesInBrushing.Dropoff) { 
+
+			test = i; 
+			n = test.__data__[0];
+
+			if(n == null) {
+				n1 = test.__data__.dnode;
+				if(n1 != null && !selectedDropoffNodes.has(n1) && n1 != selectedNode) {
+					selectedDropoffNodes.add(n1);
+				}
+			} else {
+				if(!selectedDropoffNodes.has(n) && n != selectedNode) {
+					selectedDropoffNodes.add(n);
+				}
+			}
+		}
+
+		if(selectedNode != null && selectedCat === "Dropoff") {
+			selectedDropoffNodes.add(selectedNode);
+		}
+
+		allNodesInBrushing.Pickup = selectedPickupNodes;
+		allNodesInBrushing.Dropoff = selectedDropoffNodes;
+
+		drawBarForBrushing(allNodesInBrushing);
 }, 1500);
 });
 
@@ -149,6 +197,9 @@ let allNodesInArea = {
 	Dropoff :occurencesDropoff,
 	Pickup : occurencesPickup
 };
+
+var selectedNode;
+var selectedCat;
 
 /* slider variables
 var slider;
@@ -493,6 +544,8 @@ function drawPaths(paths, nodeID) {
 
 					// Selected node in black
 					if ((d[0] == nodeID)){
+						selectedNode = nodeID;
+						selectedCat = category;
 						return "black"
 					} else if (category == "Pickup"){
 						return "red";
