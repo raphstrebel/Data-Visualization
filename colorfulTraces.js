@@ -59,6 +59,8 @@ let allNodesInArea = {
 
 // Selection is important for the kind of stats we want to see
 let selection = "appear";
+var selectedNode;
+var selectedCat;
 
 // Used to know when to load or not the nodes
 appeared = false;
@@ -96,9 +98,63 @@ brushFinished = {
 brushFinished.registerListener(function(val) {
 	setTimeout(function() {
 		allNodesInBrushing = getNodesInBrush();
-		console.log("dropoffs in area : " + allNodesInBrushing.Dropoff);
-	console.log("number of dropoffs : " + allNodesInBrushing.Dropoff.length);
-	drawBarForBrushing(allNodesInBrushing);
+
+		// Get unique selected pickup nodes
+		selectedPickupNodes = new Set();
+
+		for(let i of allNodesInBrushing.Pickup) { 
+
+			test = i; 
+			n = test.__data__[0];
+
+			if(n == null) {
+				n1 = test.__data__.pnode;
+				if(n1 != null && !selectedPickupNodes.has(n1) && n1 != selectedNode) {
+					selectedPickupNodes.add(n1);
+				}
+			} else {
+				if(!selectedPickupNodes.has(n) && n != selectedNode) {
+					selectedPickupNodes.add(n);
+				}
+			}
+		}
+
+		// check if selected node is a pickup
+		if(selectedNode != null && selectedCat === "Pickup") {
+			selectedPickupNodes.add(selectedNode);
+		}
+
+		// Get unique selected dropoff nodes
+
+		selectedDropoffNodes = new Set();
+
+		for(let i of allNodesInBrushing.Dropoff) { 
+
+			test = i; 
+			n = test.__data__[0];
+
+			if(n == null) {
+				n1 = test.__data__.dnode;
+				if(n1 != null && !selectedDropoffNodes.has(n1) && n1 != selectedNode) {
+					selectedDropoffNodes.add(n1);
+				}
+			} else {
+				if(!selectedDropoffNodes.has(n) && n != selectedNode) {
+					selectedDropoffNodes.add(n);
+				}
+			}
+		}
+
+		// check if selected node is a dropoff
+		if(selectedNode != null && selectedCat === "Dropoff") {
+			selectedDropoffNodes.add(selectedNode);
+		}
+
+		// Replace in allNodesInBrushing
+		allNodesInBrushing.Pickup = selectedPickupNodes;
+		allNodesInBrushing.Dropoff = selectedDropoffNodes;
+
+		drawBarForBrushing(allNodesInBrushing);
 }, 1500);
 });
 
@@ -475,11 +531,7 @@ function drawPaths(paths, nodeID) {
 				// d[0] = id
 				// d[1] = time
 				// d[2] = category
-
-
 				return _.zip(ids, ts, categories)
-
-
 			})
 			.enter()
 			.append("circle")
@@ -488,6 +540,8 @@ function drawPaths(paths, nodeID) {
 
 					// Selected node in black
 					if ((d[0] == nodeID)){
+						selectedNode = nodeID;
+						selectedCat = category;
 						return "black"
 					} else if (category == "Pickup"){
 						return "red";
@@ -603,61 +657,6 @@ function showPickupAndDropoffByNbPickupsAndDropoffs() {
 					} else {
 						return linearScale(pickupToNbPickups[d["pnode"]]);
 					}
-				})
-				.style("opacity", 0)
-				.transition()
-				.duration(1000)
-				.delay(function(d,i){ return  2*i; })
-				.style("opacity", 1);
-}
-
-function showPickupByNbPickups() {
-
-	var linearScale = d3.scaleLinear()
-		.domain([0, 20])
-		//.interpolate(d3.interpolateHcl)
-		//.range(['blue','red']);
-		.range(['red', 'white']);
-
-	interactiveNetwork.selectAll(".Node")
-		.data(pickupNodes)
-			.enter()
-				.append("circle")
-				.attr("class", "Pickup")
-				.attr("r" , normalNodeRadius)
-				.attr("id", function(d){return d["pnode"];})
-				.attr("transform", function(d) {
-					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
-				})
-				.attr("fill", function(d,i){
-					return linearScale(pickupToNbPickups[d["pnode"]]);
-				})
-				.style("opacity", 0)
-				.transition()
-				.duration(1000)
-				.delay(function(d,i){ return  2*i; })
-				.style("opacity", 1);
-}
-
-function showDropoffByNbDropoffs() {
-	var linearScale = d3.scaleLinear()
-		.domain([0, 5])
-		//.interpolate(d3.interpolateHcl)
-		//.range(['blue','red']);
-		.range(['blue', 'DodgerBlue', 'white']);
-
-	interactiveNetwork.selectAll(".Node")
-		.data(dropoffNodes)
-			.enter()
-				.append("circle")
-				.attr("class", "Pickup")
-				.attr("r" , normalNodeRadius)
-				.attr("id", function(d){return d["dnode"];})
-				.attr("transform", function(d) {
-					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
-				})
-				.attr("fill", function(d,i){
-					return linearScale(dropoffToNbDropoffs[d["dnode"]]);
 				})
 				.style("opacity", 0)
 				.transition()
@@ -850,7 +849,6 @@ function idled() {
 }
 
 function zoom() {
-	//console.log("Hello")
   var t = interactiveNetwork.transition().duration(750);
   interactiveNetwork.selectAll("circle").transition(t)
 			.attr("transform", function(d){
