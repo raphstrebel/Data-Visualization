@@ -21,17 +21,11 @@ p {
 
 h4 {
     padding-bottom: 5%;
+    font-style: italic;
+    text-align: center;
 }
-
 
 h1 , h3 {
-	text-align: center;
-}
-
-
-h4{
-	margin-top: 5px;
-	font-style: italic;
 	text-align: center;
 }
 
@@ -73,9 +67,9 @@ h4{
 
 div.infoBox {
     position: absolute;
-    text-align: left;
+    text-align: center;
     width: 100px;
-    height: 40px;
+    height: 30px;
     padding: 2px;
     font: 12px sans-serif;
     background: lightsteelblue;
@@ -84,31 +78,17 @@ div.infoBox {
     pointer-events: none;
 }
 
-.ticks {
-    font: 10px sans-serif;
-}
-
-.track,
-.track-inset,
-.track-overlay {
-    stroke-linecap: round;
-}
-
-.track {
-    stroke: #000;
-    stroke-opacity: 0.3;
-    stroke-width: 10px;
-}
-
-.track-inset {
-    stroke: #FFFFFF;
-    stroke-width: 8px;
-}
-
-.track-overlay {
-    pointer-events: stroke;
-    stroke-width: 50px;
-    stroke: transparent;
+div.pathInfoBox {
+    position: absolute;
+    text-align: center;
+    width: 100px;
+    height: 20px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
 }
 
 footer{

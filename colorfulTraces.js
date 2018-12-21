@@ -440,12 +440,10 @@ function drawControls(){
 }
 
 function handlePathMouseOver(d) {
-
 	pathTooltip.transition().style("opacity", .9);
 	pathTooltip.html(" time : " + d[1])
 		.style("left", (d3.event.pageX) + "px")
 		.style("top", (d3.event.pageY - 28) + "px");
-
 }
 
 
@@ -881,7 +879,9 @@ function getNodesInBounds(selected) {
 		node_height = selected[i].transform.animVal[0].matrix.f;
 
 		if(0 <= node_width && node_width <= w && 0 <= node_height && node_height <= h) {
-			selectedSet.push(selected[i]);
+			if(!selectedSet.includes(node)) {
+				selectedSet.push(selected[i]);
+			}	
 		}
 	}
 
@@ -1131,5 +1131,6 @@ whenDocumentLoaded(() => {
 		interactiveNetwork.append("g")
 			.attr("class", "brush")
 			.call(brush);
+
 
 });
