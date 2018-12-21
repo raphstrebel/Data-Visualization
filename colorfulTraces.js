@@ -425,12 +425,10 @@ function drawControls(){
 }
 
 function handlePathMouseOver(d) {
-
 	pathTooltip.transition().style("opacity", .9);
 	pathTooltip.html(" time : " + d[1])
 		.style("left", (d3.event.pageX) + "px")
 		.style("top", (d3.event.pageY - 28) + "px");
-
 }
 
 
