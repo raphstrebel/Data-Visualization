@@ -19,57 +19,9 @@ brushFinished = {
 brushFinished.registerListener(function(val) {
 	setTimeout(function() {
 		allNodesInBrushing = getNodesInBrush();
-
-		selectedPickupNodes = new Set();
-
-		for(let i of allNodesInBrushing.Pickup) { 
-
-			test = i; 
-			n = test.__data__[0];
-
-			if(n == null) {
-				n1 = test.__data__.pnode;
-				if(n1 != null && !selectedPickupNodes.has(n1) && n1 != selectedNode) {
-					selectedPickupNodes.add(n1);
-				}
-			} else {
-				if(!selectedPickupNodes.has(n) && n != selectedNode) {
-					selectedPickupNodes.add(n);
-				}
-			}
-		}
-
-		if(selectedNode != null && selectedCat === "Pickup") {
-			selectedPickupNodes.add(selectedNode);
-		}
-
-		selectedDropoffNodes = new Set();
-
-		for(let i of allNodesInBrushing.Dropoff) { 
-
-			test = i; 
-			n = test.__data__[0];
-
-			if(n == null) {
-				n1 = test.__data__.dnode;
-				if(n1 != null && !selectedDropoffNodes.has(n1) && n1 != selectedNode) {
-					selectedDropoffNodes.add(n1);
-				}
-			} else {
-				if(!selectedDropoffNodes.has(n) && n != selectedNode) {
-					selectedDropoffNodes.add(n);
-				}
-			}
-		}
-
-		if(selectedNode != null && selectedCat === "Dropoff") {
-			selectedDropoffNodes.add(selectedNode);
-		}
-
-		allNodesInBrushing.Pickup = selectedPickupNodes;
-		allNodesInBrushing.Dropoff = selectedDropoffNodes;
-
-		drawBarForBrushing(allNodesInBrushing);
+		console.log("dropoffs in area : " + allNodesInBrushing.Dropoff);
+	console.log("number of dropoffs : " + allNodesInBrushing.Dropoff.length);
+	drawBarForBrushing(allNodesInBrushing);
 }, 1500);
 });
 
@@ -81,7 +33,6 @@ function drawBarForBrushing(allNodesInBrushing){
 
 
 
-	console.log(allNodesInBrushing)
 	pickupScale = d3.scaleLinear().domain([0 , occurencesPickup]).range([0, w - 2 *mR - mL]);
 	dropoffScale = d3.scaleLinear().domain([0 , occurencesDropoff]).range([0, w - 2* mR - mL]);
 
@@ -118,7 +69,6 @@ function drawBarForBrushing(allNodesInBrushing){
 	bars.append("text").attr("x",  pickupScale(nbPickup) + 5).attr("y", h/8).text(nbPickup)
 		.attr("transform", "translate( "+ mL+" , 0)");
 
-	console.log(h)
 	// Blue bar
 	bars.append("rect")
 		.attr("width", dropoffScale(nbDropoff))
@@ -141,7 +91,9 @@ bars.append("g")
 				.call(d3.axisLeft(yAxis).ticks(0));
 
 		// Global Text
-
+	bars.append("text").attr("transform", "translate("+0+","+_.floor(h -19)+")")
+	.text("Percentage of selected nodes by category (with # locations)")
+	.attr("font-size", _.floor(w * 10/320))
 }
 
 // global constants
@@ -197,9 +149,6 @@ let allNodesInArea = {
 	Dropoff :occurencesDropoff,
 	Pickup : occurencesPickup
 };
-
-var selectedNode;
-var selectedCat;
 
 /* slider variables
 var slider;
@@ -544,8 +493,6 @@ function drawPaths(paths, nodeID) {
 
 					// Selected node in black
 					if ((d[0] == nodeID)){
-						selectedNode = nodeID;
-						selectedCat = category;
 						return "black"
 					} else if (category == "Pickup"){
 						return "red";
@@ -1037,7 +984,7 @@ function resize(){
 	d3.select("#interactiveNetwork").attr("width", width + margin)
 		.attr("height", 0.6*height + margin);
 	d3.select("#blackLightningNetwork").attr("width", width).attr("height", height)
-	showAllNodesByOccurrence()
+	//showAllNodesByOccurrence()
 	d3.select("#control").attr("width", width + margin)
 }
 
