@@ -246,6 +246,7 @@ function handleDropoffMouseClick(node) {
 	// Show node on map (in information section)
 	showNodeOnMap(nodeID, "Dropoff");
 
+	// Inform the listener that we are brushing
 	brushFinished.a = true;
 
 }
@@ -313,8 +314,8 @@ function showAllDropoffNodes() {
 				.append("circle")
 				.attr("class", "Dropoff")
 				.attr("r" , normalNodeRadius)
-				.attr("id", function(d){return d["dnode"];})
-				.attr("transform", function(d) {
+				.attr("id", (d) =>  d["dnode"] )
+				.attr("transform", (d) => {
 					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
 				})
 				.attr("fill", "blue")
@@ -324,7 +325,7 @@ function showAllDropoffNodes() {
 				.on("click", handleDropoffMouseClick)
 				.transition()
 				.duration(1000)
-				.delay(function(d,i){ return 2*i; })
+				.delay( (d,i) => 2*i )
 				.style("opacity", 1);
 }
 
@@ -336,8 +337,8 @@ function showAllPickupNodes() {
 				.append("circle")
 				.attr("class", "Pickup")
 				.attr("r" , normalNodeRadius)
-				.attr("id", function(d){return d["pnode"];})
-				.attr("transform", function(d) {
+				.attr("id", (d) => d["pnode"])
+				.attr("transform", (d) => {
 					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
 				})
 				.attr("fill", "red")
@@ -442,7 +443,7 @@ function handlePathMouseOver(d) {
 }
 
 
-// This Methode draw the path
+// This Methode draw all the paths
 function drawPaths(paths, nodeID) {
 
 	var highlightler = "black";
@@ -452,7 +453,7 @@ function drawPaths(paths, nodeID) {
 		.enter()
 		.append("g")
 			.attr("class", "Path")
-			//.on("mouseover", highlightPath)
+
 			.selectAll(".Nodepath")
 			.data(function(d){
 
@@ -472,6 +473,8 @@ function drawPaths(paths, nodeID) {
 
 				});
 
+				// Reminder : 
+
 				// d[0] = id
 				// d[1] = time
 				// d[2] = category
@@ -481,6 +484,7 @@ function drawPaths(paths, nodeID) {
 
 
 			})
+			// Drawing each path
 			.enter()
 			.append("circle")
 				.attr("fill", (d) => {
@@ -506,7 +510,7 @@ function drawPaths(paths, nodeID) {
 					}
 					} )
 				.attr("id", (d) => d[0])
-				.attr("r", function(d){
+				.attr("r", (d) => {
 
 					let category = d[2];
 
@@ -525,7 +529,6 @@ function drawPaths(paths, nodeID) {
 						return handleDropoffMouseOver(d[0]);
 					} else {
 						return handlePathMouseOver(d);
-						//return doNothing();
 					}
 				})
 				.on("mouseout", (d) => {
@@ -535,7 +538,7 @@ function drawPaths(paths, nodeID) {
 						return handlePathMouseOut();
 					}
 				})
-				.on("click", function(d){
+				.on("click", (d) => {
 					if (d[2] == "Pickup"){
 						return handlePickupMouseClick(d[0]);
 					} else if (d[2] == "Dropoff"){
@@ -544,7 +547,7 @@ function drawPaths(paths, nodeID) {
 						return handlePathMouseOut();
 					}
 				})
-				.attr("transform", function(d) {
+				.attr("transform", (d) => {
 					return "translate("+scaleX(Number(osmToLatLng[d[0]][1]))+","+ scaleY(Number(osmToLatLng[d[0]][0]))+")";
 				})
 				.style("opacity", 0)
@@ -577,8 +580,6 @@ function showPickupAndDropoffByNbPickupsAndDropoffs() {
 
 	var linearScale = d3.scaleLinear()
 		.domain([0, 20])
-		//.interpolate(d3.interpolateHcl)
-		//.range(['blue','red']);
 		.range(['blue', 'green']);
 
 	interactiveNetwork.selectAll(".Node")
@@ -613,10 +614,8 @@ function showPickupAndDropoffByNbPickupsAndDropoffs() {
 
 function showPickupByNbPickups() {
 
-	var linearScale = d3.scaleLinear()
+	let linearScale = d3.scaleLinear()
 		.domain([0, 20])
-		//.interpolate(d3.interpolateHcl)
-		//.range(['blue','red']);
 		.range(['red', 'white']);
 
 	interactiveNetwork.selectAll(".Node")
@@ -625,8 +624,8 @@ function showPickupByNbPickups() {
 				.append("circle")
 				.attr("class", "Pickup")
 				.attr("r" , normalNodeRadius)
-				.attr("id", function(d){return d["pnode"];})
-				.attr("transform", function(d) {
+				.attr("id", (d) => d["pnode"])
+				.attr("transform", (d) =>  {
 					return "translate("+scaleX(Number(osmToLatLng[d["pnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["pnode"]][0]))+")";
 				})
 				.attr("fill", function(d,i){
@@ -640,7 +639,7 @@ function showPickupByNbPickups() {
 }
 
 function showDropoffByNbDropoffs() {
-	var linearScale = d3.scaleLinear()
+	let linearScale = d3.scaleLinear()
 		.domain([0, 5])
 		//.interpolate(d3.interpolateHcl)
 		//.range(['blue','red']);
@@ -652,17 +651,17 @@ function showDropoffByNbDropoffs() {
 				.append("circle")
 				.attr("class", "Pickup")
 				.attr("r" , normalNodeRadius)
-				.attr("id", function(d){return d["dnode"];})
-				.attr("transform", function(d) {
+				.attr("id", (d) =>  d["dnode"])
+				.attr("transform", (d) => {
 					return "translate("+scaleX(Number(osmToLatLng[d["dnode"]][1]))+","+ scaleY(Number(osmToLatLng[d["dnode"]][0]))+")";
 				})
-				.attr("fill", function(d,i){
+				.attr("fill", (d,i) =>{
 					return linearScale(dropoffToNbDropoffs[d["dnode"]]);
 				})
 				.style("opacity", 0)
 				.transition()
 				.duration(1000)
-				.delay(function(d,i){ return  2*i; })
+				.delay((d,i) =>  2*i)
 				.style("opacity", 1);
 }
 
@@ -733,6 +732,7 @@ function getPathsToNode(nodeID) {
 	return toReturn;
 }
 
+// Use to rescale when resizing or when brushing
 function calculateScale(width, height){
 
 	scaleX = d3.scaleLinear()
@@ -772,8 +772,8 @@ function initializeMap() {
 }
 
 function showNodeOnMap(nodeID, nodeClass) {
-	var nodeLat;
-	var nodeLng;
+	let nodeLat;
+	let nodeLng;
 
 	switch(nodeClass) {
 		case "Pickup":
@@ -796,7 +796,6 @@ function showNodeOnMap(nodeID, nodeClass) {
 	infoMap.setView([nodeLat, nodeLng], 15);
 
 	// add marker for node on map
-
 	var greenIcon = L.icon({
 	    iconUrl: 'Images/blackIcon.png',
 	    iconSize:     [10, 10], // size of the icon
@@ -817,6 +816,7 @@ function centerInfoMap(lngL, lngR, latU, latD) {
 
 // ----------------------------------------- BRUSHING -----------------------------------------
 
+// Fire when brushing is finished
 function brushended() {
 
 	var s = d3.event.selection;
@@ -849,8 +849,9 @@ function idled() {
   idleTimeout = null;
 }
 
+
+
 function zoom() {
-	//console.log("Hello")
   var t = interactiveNetwork.transition().duration(750);
   interactiveNetwork.selectAll("circle").transition(t)
 			.attr("transform", function(d){
